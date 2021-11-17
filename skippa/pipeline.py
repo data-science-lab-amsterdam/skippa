@@ -60,6 +60,8 @@ class Skippa:
         return Pipeline(steps=self.pipeline_steps, **kwargs)
 
     def _step(self, name: str, transformer: Transformation) -> None:
+        name = f'{name}_{self._step_idx}'
+        self._step_idx += 1
         self.pipeline_steps.append((name, transformer))
 
     # def _transformer(self, cols, cls: Type[Transformation], **kwargs) -> Transformation:

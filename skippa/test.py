@@ -8,6 +8,7 @@ from skippa.pipeline import columns, Skippa
 
 
 df = pd.DataFrame({
+    'q': [2, 3, 4],
     'x': ['a', 'b', 'c'],
     'y': [1, 16, 1000],
     'z': [0.4, None, 8.7]
@@ -15,10 +16,11 @@ df = pd.DataFrame({
 pipe = (
     Skippa()
         .impute(columns(dtype_include='number'), strategy='median')
+        #.impute(columns(dtype_include='category'), strategy='most_frequent')
         .scale(columns(dtype_include='number'), type='standard')
         .onehot(columns(['x']))
-        .rename(columns(pattern='x_*'), lambda c: f'QQ{c}')
-        .select(columns(['y', 'z', 'QQx_a']))
+        .rename(columns(pattern='x_*'), lambda c: c.replace('x', 'xx'))
+        .select(columns(['y', 'z']) + columns(pattern='xx_*'))
         .build(verbose=True)
 )
 

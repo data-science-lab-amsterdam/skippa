@@ -24,16 +24,16 @@ from __future__ import annotations
 
 from typing import Optional, Union, List, Callable, Type
 
-from copy import deepcopy
+# from copy import deepcopy
 import dill
 import pandas as pd
-from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import StandardScaler, MinMaxScaler, OneHotEncoder, FunctionTransformer
+# from sklearn.base import BaseEstimator, TransformerMixin
+# from sklearn.impute import SimpleImputer
+# from sklearn.preprocessing import StandardScaler, MinMaxScaler, OneHotEncoder, FunctionTransformer
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import FeatureUnion, Pipeline
-from sklearn.compose import make_column_selector, make_column_transformer
-from sklearn.linear_model import LogisticRegression
+# from sklearn.compose import make_column_selector, make_column_transformer
+# from sklearn.linear_model import LogisticRegression
 
 from skippa.transformers import (
     Transformation,
@@ -125,4 +125,3 @@ class Skippa:
         """
         self.pipeline_steps.extend(skippa.pipeline_steps)
         return self
-

@@ -241,4 +241,3 @@ class DateEncoder(BaseEstimator, TransformerMixin):
     def transform(self, X):
         dt = X.apply(pd.to_datetime).dt
         return pd.concat([dt.year, dt.month, dt.day], axis=1)
-

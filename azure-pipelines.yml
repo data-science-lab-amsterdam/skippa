@@ -1,0 +1,113 @@
+# Python package
+# Create and test a Python package on multiple Python versions.
+# Add steps that analyze code, save the dist with the build record, publish to a PyPI-compatible index, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/python
+
+trigger:
+  branches:
+    include:
+    - master
+  paths:
+    # only trigger if setup.py has changed (because of version number increase)
+    include:
+    - setup.py
+
+stages:
+- stage: Build_Test
+  jobs:
+  - job: Build_Test
+
+    pool:
+      vmImage: 'ubuntu-latest'
+    strategy:
+      matrix:
+        Python37:
+          python.version: '3.7'
+        Python38:
+          python.version: '3.8'
+        Python39:
+            python.version: '3.9'
+
+    variables:
+      projectTestResultDir: junit
+
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '$(python.version)'
+        addToPath: true
+      displayName: 'Use Python $(python.version)'
+
+#    - script: |
+#        sudo apt-get update && sudo apt-get install build-essential
+#      name: gcc
+#      displayName: 'Install core tools (gcc)'
+
+    - script: |
+        pip install --upgrade pip && \
+        pip install setuptools wheel && \
+        pip install -r requirements.txt && \
+        pip install -e .
+      name: install
+      displayName: 'Install packages'
+
+    - script: |
+        pip install pytest pytest-cov
+        python -m pytest --junitxml=junit/test-results.xml --cov=skippa --cov-report=xml
+      name: run_tests
+      displayName: 'Run tests'
+      condition: succeeded()
+
+    - task: PublishTestResults@2
+      condition: succeededOrFailed()
+      inputs:
+        testResultsFiles: '**/test-*.xml'
+        testRunTitle: 'Publish test results for Python $(python.version)'
+      displayName: 'Publish test results'
+
+    - task: PublishCodeCoverageResults@1
+      inputs:
+        codeCoverageTool: Cobertura
+        summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.xml'
+      displayName: 'Publish coverage results'
+
+- stage: Publish
+  dependsOn: Build_Test
+  condition: succeeded()
+  jobs:
+  - job: Publish
+
+    pool:
+      vmImage: 'ubuntu-latest'
+
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.8'
+        addToPath: true
+      displayName: 'Use Python 3.8'
+
+    - script: |
+        pip install setuptools wheel
+        python setup.py sdist bdist_wheel
+      displayName: 'Package creation'
+
+    - script: |
+        pip install twine
+      displayName: 'Install twine'
+
+    # this sets credentials in the PYPIRC_PATH env variable, to be used by twine
+    # the feed specification should include the project name!
+    - task: twineAuthenticate@1
+        inputs:
+          artifactFeed: Intern/dsl-code-library
+      displayName: 'Authenticate twine for Azure Artifact feed'
+
+    - script: |
+        twine upload \
+          -r Datalab \
+          --config-file $(PYPIRC_PATH) \
+          dist/*.whl
+      displayName: 'Publish package to Azure Artifacts'
+
+

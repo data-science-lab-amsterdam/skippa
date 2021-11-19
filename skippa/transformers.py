@@ -88,7 +88,7 @@ class XColumnTransformer(ColumnTransformer, XMixin):
         super().fit(X, **kwargs)
         return self
 
-    def transform(self, X):
+    def transform(self, X, y=None):
         res = super().transform(X=X,)
         return pd.DataFrame(data=res, columns=self._get_names())
 
@@ -119,7 +119,7 @@ class XRenamer(BaseEstimator, TransformerMixin):
     def __init__(self, mapping: Union[Dict, Tuple[ColumnSelector, Callable]]) -> None:
         self.mapping = mapping
 
-    def fit(self, X, **kwargs):
+    def fit(self, X, y=None, **kwargs):
         if isinstance(self.mapping, tuple):
             column_selector, renamer = self.mapping
             column_names = column_selector(X)
@@ -128,7 +128,7 @@ class XRenamer(BaseEstimator, TransformerMixin):
             self.mapping_dict = self.mapping
         return self
 
-    def transform(self, X, **kwargs):
+    def transform(self, X, y=None, **kwargs):
         df_renamed = X.rename(self.mapping_dict, axis=1)
         return df_renamed
 
@@ -137,10 +137,10 @@ class XSelector(BaseEstimator, TransformerMixin):
     def __init__(self, cols: ColumnSelector) -> None:
         self.cols = cols
 
-    def fit(self, X, **kwargs):
+    def fit(self, X, y=None, **kwargs):
         return self
 
-    def transform(self, X, **kwargs):
+    def transform(self, X, y=None, **kwargs):
         return X[self.cols(X)]
 
 
@@ -150,12 +150,12 @@ class XSimpleImputer(SimpleImputer, XMixin):
         self._set_columns(cols)
         super().__init__(**kwargs)
 
-    def fit(self, X, **kwargs):
+    def fit(self, X, y=None, **kwargs):
         column_names = self._evaluate_columns(X)
         super().fit(X[column_names], **kwargs)
         return self
 
-    def transform(self, X, **kwargs):
+    def transform(self, X, y=None, **kwargs):
         column_names = self._evaluate_columns(X)
         res = super().transform(X[column_names], **kwargs)
         X = X.copy()
@@ -169,12 +169,12 @@ class XStandardScaler(StandardScaler, XMixin):
         self._set_columns(cols)
         super().__init__(**kwargs)
 
-    def fit(self, X, **kwargs):
+    def fit(self, X, y=None, **kwargs):
         column_names = self._evaluate_columns(X)
         super().fit(X[column_names], **kwargs)
         return self
 
-    def transform(self, X, **kwargs):
+    def transform(self, X, y=None, **kwargs):
         column_names = self._evaluate_columns(X)
         res = super().transform(X[column_names], **kwargs)
         X = X.copy()
@@ -188,12 +188,12 @@ class XMinMaxScaler(MinMaxScaler, XMixin):
         self._set_columns(cols)
         super().__init__(**kwargs)
 
-    def fit(self, X, **kwargs):
+    def fit(self, X, y=None, **kwargs):
         column_names = self._evaluate_columns(X)
         super().fit(X[column_names], **kwargs)
         return self
 
-    def transform(self, X, **kwargs):
+    def transform(self, X, y=None, **kwargs):
         column_names = self._evaluate_columns(X)
         res = super().transform(X[column_names], **kwargs)
         X = X.copy()
@@ -207,12 +207,12 @@ class XOneHotEncoder(OneHotEncoder, XMixin):
         self._set_columns(cols)
         super().__init__(**kwargs)
 
-    def fit(self, X, **kwargs):
+    def fit(self, X, y=None, **kwargs):
         column_names = self._evaluate_columns(X)
         super().fit(X[column_names], **kwargs)
         return self
 
-    def transform(self, X, **kwargs):
+    def transform(self, X, y=None, **kwargs):
         column_names = self._evaluate_columns(X)
         data_new = super().transform(X[column_names], **kwargs)
         df_new = X.drop(column_names, axis=1)
@@ -221,13 +221,30 @@ class XOneHotEncoder(OneHotEncoder, XMixin):
         return df_new
 
 
+class XConcat(BaseEstimator, XMixin):
+
+    def __init__(self, left, right) -> None:
+        self.name1, self.pipe1 = left
+        self.name2, self.pipe2 = right
+
+    def fit(self, X, y=None, **kwargs):
+        self.pipe1.fit(X)
+        self.pipe2.fit(X, y=y)
+        return self
+
+    def transform(self, X, y=None, **kwargs):
+        df1 = self.pipe1.transform(X, **kwargs)
+        df2 = self.pipe2.transform(X, **kwargs)
+        return pd.concat([df1, df2], axis=1)
+
+
 class DateFormatter(BaseEstimator, TransformerMixin):
 
     def fit(self, X, y=None):
         # stateless transformer
         return self
 
-    def transform(self, X):
+    def transform(self, X, y=None):
         # assumes X is a DataFrame
         Xdate = X.apply(pd.to_datetime)
         return Xdate
@@ -238,6 +255,33 @@ class DateEncoder(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
         return self
 
-    def transform(self, X):
+    def transform(self, X, y=None):
         dt = X.apply(pd.to_datetime).dt
         return pd.concat([dt.year, dt.month, dt.day], axis=1)
+
+
+class OutlierRemover(BaseEstimator,TransformerMixin):
+    def __init__(self, factor: float = 1.5):
+        self.factor = factor
+        
+    def _outlier_detector(self, X, y=None):
+        X = pd.Series(X).copy()
+        q1 = X.quantile(0.25)
+        q3 = X.quantile(0.75)
+        iqr = q3 - q1
+        self.lower_bound.append(q1 - (self.factor * iqr))
+        self.upper_bound.append(q3 + (self.factor * iqr))
+
+    def fit(self, X, y=None):
+        self.lower_bound = []
+        self.upper_bound = []
+        X.apply(self._outlier_detector)
+        return self
+    
+    def transform(self, X, y=None):
+        X = pd.DataFrame(X).copy()
+        for i in range(X.shape[1]):
+            x = X.iloc[:, i].copy()
+            x[(x < self.lower_bound[i]) | (x > self.upper_bound[i])] = np.nan
+            X.iloc[:, i] = x
+        return X

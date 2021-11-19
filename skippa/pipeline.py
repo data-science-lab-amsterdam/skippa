@@ -44,6 +44,7 @@ from skippa.transformers import (
     XStandardScaler,
     XMinMaxScaler,
     XOneHotEncoder,
+    XConcat,
     xmake_column_transformer,
     ColumnSelector,
     columns
@@ -116,14 +117,27 @@ class Skippa:
         self._step('select', XSelector(cols))
         return self
 
-    def add(self, skippa: Skippa) -> Skippa:
-        """TODO: Iets met FeatureUnion?
+    def __add__(self, pipe: Skippa) -> Skippa:
+        """Append two Skippas
 
         Args:
-            cols (Union[ColumnSelector, List[str]]): [description]
+            pipe: Skippa: [description]
 
         Returns:
             Skippa: [description]
         """
-        self.pipeline_steps.extend(skippa.pipeline_steps)
+        self.pipeline_steps.extend(pipe.pipeline_steps)
         return self
+
+    def concat(self, pipe: Skippa) -> Skippa:
+        """Concatenate output of this pipeline to another
+
+        Args:
+            pipe (Skippa): [description]
+
+        Returns:
+            Skippa: [description]
+        """
+        new_pipe = Skippa()
+        new_pipe._step('concat', XConcat(left=('part1', self.build()),right=('part2', pipe.build())))
+        return new_pipe

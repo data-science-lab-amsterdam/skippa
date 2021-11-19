@@ -1,10 +1,11 @@
 """
 Test
 """
+import numpy as np
 import pandas as pd
 import dill
 
-from skippa.pipeline import columns, Skippa
+from skippa.pipeline import Skippa, columns
 
 
 df = pd.DataFrame({
@@ -13,18 +14,29 @@ df = pd.DataFrame({
     'y': [1, 16, 1000],
     'z': [0.4, None, 8.7]
 })
+y = np.array([0, 0, 1])
+
+pipe0 = (
+    Skippa()
+    .onehot(columns(['y']))
+    .select(columns(pattern='y_*'))
+)
+
 pipe = (
     Skippa()
         .impute(columns(dtype_include='number'), strategy='median')
-        #.impute(columns(dtype_include='category'), strategy='most_frequent')
         .scale(columns(dtype_include='number'), type='standard')
         .onehot(columns(['x']))
-        .rename(columns(pattern='x_*'), lambda c: c.replace('x', 'xx'))
-        .select(columns(['y', 'z']) + columns(pattern='xx_*'))
+        .rename(columns(pattern='x_*'), lambda c: c.replace('x', 'cat'))
+        .select(columns(['y', 'z']) + columns(pattern='cat_*'))
+        .concat(pipe0)
         .build(verbose=True)
 )
 
-res = pipe.fit_transform(df)
+model = pipe.fit(X=df, y=y)
+
+res = pipe.transform(df)
+#res = pipe.fit_transform(df)
 print(res)
 
 # filename = './mypipeline.dill'

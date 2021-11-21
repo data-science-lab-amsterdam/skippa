@@ -118,7 +118,7 @@ class Skippa:
         return self
 
     def __add__(self, pipe: Skippa) -> Skippa:
-        """Append two Skippas
+        """Append two Skippas -> does this make sense????
 
         Args:
             pipe: Skippa: [description]
@@ -139,5 +139,11 @@ class Skippa:
             Skippa: [description]
         """
         new_pipe = Skippa()
-        new_pipe._step('concat', XConcat(left=('part1', self.build()),right=('part2', pipe.build())))
+        new_pipe._step(
+            'concat', 
+            XConcat(
+                left=('part1', self.build()),
+                right=('part2', pipe.build())
+            )
+        )
         return new_pipe

@@ -41,10 +41,14 @@ ColumnExpression = Union[ColumnSelector, List[str]]
 
 
 def columns(
-    include: Optional[List[str]] = None,
-    exclude: Optional[List[str]] = None,
+    *args,
+    include: Optional[ColumnExpression] = None,
+    exclude: Optional[ColumnExpression] = None,
     **kwargs
 ) -> ColumnSelector:
+    if len(args) == 1:
+        include = args[0]
+        
     if isinstance(include, ColumnSelector):
         return include
 
@@ -55,9 +59,6 @@ def columns(
     else:
         selector = make_column_selector(**kwargs)
     return ColumnSelector(selector)
-
-
-
 
 
 class XMixin:
@@ -131,6 +132,7 @@ class XRenamer(BaseEstimator, TransformerMixin):
     def transform(self, X, y=None, **kwargs):
         df_renamed = X.rename(self.mapping_dict, axis=1)
         return df_renamed
+
 
 class XSelector(BaseEstimator, TransformerMixin):
 

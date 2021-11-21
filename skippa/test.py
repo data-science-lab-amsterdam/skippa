@@ -29,13 +29,13 @@ pipe = (
         .onehot(columns(['x']))
         .rename(columns(pattern='x_*'), lambda c: c.replace('x', 'cat'))
         .select(columns(['y', 'z']) + columns(pattern='cat_*'))
-        .concat(pipe0)
+        # .concat(pipe0)
         .build(verbose=True)
 )
 
 model = pipe.fit(X=df, y=y)
 
-res = pipe.transform(df)
+res = model.transform(df)
 #res = pipe.fit_transform(df)
 print(res)
 
@@ -54,3 +54,9 @@ print(res)
 # res = pipe2.fit_transform(df)
 # print(res)
 
+#
+# Use case for .add method:
+# - you define a 'standard' skippa that you always want to use
+# - you can define it as an object and import it
+# - you add your current skippa to it
+#

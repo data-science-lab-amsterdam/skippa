@@ -2,6 +2,6 @@
 Usage
 =====
 
-To use preprocessing in a project::
+To use skippa in a project::
 
-    import preprocessing
+    from skippa import Skippa, columns

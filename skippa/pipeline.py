@@ -47,6 +47,7 @@ from skippa.transformers import (
     XStandardScaler,
     XMinMaxScaler,
     XOneHotEncoder,
+    XDateEncoder,
     XConcat,
     xmake_column_transformer,
     ColumnSelector,
@@ -54,7 +55,7 @@ from skippa.transformers import (
 )
 
 
-PathLike = Union[Path, str]
+#PathLike = Union[Path, str]
 
 
 class Skippa:
@@ -121,7 +122,7 @@ class Skippa:
             cols (ColumnSelector): [description]
 
         Returns:
-            Skippa: [description]
+            Skippa: just return itself again (so we can use piping)
         """
         self._step('impute', XSimpleImputer(cols=cols, **kwargs))
         return self
@@ -137,7 +138,7 @@ class Skippa:
             ValueError: if an unknown/unsupported scaler type is passed
 
         Returns:
-            Skippa: [description]
+            Skippa: just return itself again (so we can use piping)
         """
         if type == 'standard':
             transformation = XStandardScaler(cols=cols, **kwargs)
@@ -148,6 +149,10 @@ class Skippa:
         self._step(f'scale_{type}', transformation)
         return self
 
+    def encode_date(self, cols, **kwargs) -> Skippa:
+        self._step('date-encode', XDateEncoder(cols=cols, **kwargs))
+        return self
+
     def onehot(self, cols: ColumnSelector, **kwargs) -> Skippa:
         """Skippa wrapper around sklearn's OneHotEncoder
 
@@ -155,7 +160,7 @@ class Skippa:
             cols (ColumnSelector): [description]
 
         Returns:
-            Skippa: [description]
+            Skippa: just return itself again (so we can use piping)
         """
         if cols is None:
             cols = columns(dtype_include='category')
@@ -165,6 +170,16 @@ class Skippa:
         return self
 
     def rename(self, *args, **kwargs) -> Skippa:
+        """Rename certain columns.
+
+        Two ways to use this:
+        - a dict which defines a mapping {existing_col: new_col}
+        - a column selector and a renaming function (e.g. ['a', 'b', 'c'], lambda c: f'new_{c}')
+        It adds an XRenamer step, which wraps around pandas.rename
+
+        Returns:
+            Skippa: just return itself again (so we can use piping)
+        """
         if len(args) == 2:
             cols_to_rename = columns(args[0])
             renamer = args[1]
@@ -178,11 +193,24 @@ class Skippa:
         return self
 
     def select(self, cols: ColumnSelector) -> Skippa:
+        """Apply a column selection
+
+        Args:
+            cols (ColumnSelector): [description]
+
+        Returns:
+            Skippa: just return itself again (so we can use piping)
+        """
         self._step('select', XSelector(cols))
         return self
 
     def __add__(self, pipe: Skippa) -> Skippa:
-        """Append two Skippas -> does this make sense????
+        """Append two Skippas.
+
+        Q: So when does this make sense?
+        A: If you have defined a standard Skippa with transformations you want to do 
+           most of the time (e.g. imputation, scaling, whatever) you can define 
+           standard skippas and reuse them by adding them to you custom skippa
 
         Args:
             pipe: Skippa: [description]
@@ -193,8 +221,15 @@ class Skippa:
         self.pipeline_steps.extend(pipe.pipeline_steps)
         return self
 
+    def append(self, pipe: Skippa) -> Skippa:
+        """Just an alias for adding"""
+        return self.__add__(pipe)
+
     def concat(self, pipe: Skippa) -> Skippa:
-        """Concatenate output of this pipeline to another
+        """Concatenate output of this pipeline to another.
+
+        Where adding/appending extends the pipeline, concat keeps
+        parallel pipelines and concatenates their outcomes.
 
         Args:
             pipe (Skippa): [description]

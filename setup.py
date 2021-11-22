@@ -36,6 +36,7 @@ setup(
     description="SciKIt-learn Pipeline in PAndas",
     install_requires=requirements,
     long_description=readme + '\n\n' + history,
+    long_description_content_type='text/markdown',
     include_package_data=True,
     keywords='preprocessing pipeline pandas sklearn',
     name='skippa',

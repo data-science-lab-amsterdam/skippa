@@ -1,39 +1,42 @@
 """
-Zie https://scikit-learn.org/stable/modules/compose.html
+import numpy as np
+import pandas as pd
+import dill
 
-Stage(steps=[
-    Step(
-        name='impute',
-        cols=Cols(by_dtype='numeric')),
-        transformation=SimpleImputer(type='median')
-    )
-])
+from skippa import Skippa, columns
 
 
-df = pd.read_csv(...)
+df = pd.DataFrame({
+    'q': [2, 3, 4],
+    'x': ['a', 'b', 'c'],
+    'y': [1, 16, 1000],
+    'z': [0.4, None, 8.7]
+})
+y = np.array([0, 0, 1])
 
-df_transformed = (
-    Skippa(df)
-    .impute(Cols(dtype_include='numeric'),  strategy='median')
-    .scale(Cols(dtype_include='numeric'), type='simple')
+pipe = (
+    Skippa()
+        .impute(columns(dtype_include='number'), strategy='median')
+        .scale(columns(dtype_include='number'), type='standard')
+        .onehot(columns(['x']))
+        .rename(columns(pattern='x_*'), lambda c: c.replace('x', 'cat'))
+        .select(columns(['y', 'z']) + columns(pattern='cat_*'))
+        .build(verbose=True)
 )
 
+model = pipe.fit(X=df, y=y)
+res = model.transform(df)
 
 """
 from __future__ import annotations
+from os import PathLike
 
 from typing import Optional, Union, List, Callable, Type
+from pathlib import Path
 
-# from copy import deepcopy
 import dill
 import pandas as pd
-# from sklearn.base import BaseEstimator, TransformerMixin
-# from sklearn.impute import SimpleImputer
-# from sklearn.preprocessing import StandardScaler, MinMaxScaler, OneHotEncoder, FunctionTransformer
-from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import FeatureUnion, Pipeline
-# from sklearn.compose import make_column_selector, make_column_transformer
-# from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import Pipeline
 
 from skippa.transformers import (
     Transformation,
@@ -51,16 +54,38 @@ from skippa.transformers import (
 )
 
 
+PathLike = Union[Path, str]
+
+
 class Skippa:
+    """Skippa pipeline class
+
+    A Skippa pipeline can be extended by piping transformation commands.
+    Only a number of implemented transformations is supported. 
+    Although these transformations use existing scikit-learn transformations, each one reqwuires a 
+    specific wrapper  that implements the pandas dataframe support
+    """
 
     def __init__(self) -> None:
+        """Create a new Skippa. No parameters needed."""
         self.pipeline_steps = []
         self._step_idx: int = 0
 
-    def build(self, **kwargs):
+    def build(self, **kwargs) -> Pipeline:
+        """Build into a scikit-learn Pipeline
+
+        Returns:
+            Pipeline: An sklearn Pipeline that supports .fit, .transform
+        """
         return Pipeline(steps=self.pipeline_steps, **kwargs)
 
     def _step(self, name: str, transformer: Transformation) -> None:
+        """Add a transformation step to the pipeline
+
+        Args:
+            name (str): just a descriptive text
+            transformer (Transformation): A Skippa-extension of an sklearn transformer
+        """
         name = f'{name}_{self._step_idx}'
         self._step_idx += 1
         self.pipeline_steps.append((name, transformer))
@@ -73,16 +98,47 @@ class Skippa:
     #         raise NotImplementedError(f'No custom class implemented for {cls} transformer')
 
     @staticmethod
-    def load_pipeline(path) -> Pipeline:
-        with open(path, 'rb') as f:
+    def load_pipeline(path: PathLike) -> Pipeline:
+        """Load a previously saved pipeline
+
+        N.B. dill is used for (de)serialization, because joblib/pickle 
+        doesn't support things like lambda functions.
+
+        Args:
+            path (PathLike): pathamae, either string or pathlib.Path
+
+        Returns:
+            Pipeline: an sklearn Pipeline
+        """
+        with open(Path(path).as_posix(), 'rb') as f:
             pipe = dill.loads(f.read())
             return pipe
 
     def impute(self, cols: ColumnSelector, **kwargs) -> Skippa:
+        """Skippa wrapper around sklearn's SimpleImputer
+
+        Args:
+            cols (ColumnSelector): [description]
+
+        Returns:
+            Skippa: [description]
+        """
         self._step('impute', XSimpleImputer(cols=cols, **kwargs))
         return self
 
     def scale(self, cols: ColumnSelector, type: str = 'standard', **kwargs) -> Skippa:
+        """Skippa wrapper around sklearn's StandardScaler / MinMaxScaler
+
+        Args:
+            cols (ColumnSelector): [description]
+            type (str, optional): One of ['standard', 'minmax']. Defaults to 'standard'.
+
+        Raises:
+            ValueError: if an unknown/unsupported scaler type is passed
+
+        Returns:
+            Skippa: [description]
+        """
         if type == 'standard':
             transformation = XStandardScaler(cols=cols, **kwargs)
         elif type == 'minmax':
@@ -93,6 +149,14 @@ class Skippa:
         return self
 
     def onehot(self, cols: ColumnSelector, **kwargs) -> Skippa:
+        """Skippa wrapper around sklearn's OneHotEncoder
+
+        Args:
+            cols (ColumnSelector): [description]
+
+        Returns:
+            Skippa: [description]
+        """
         if cols is None:
             cols = columns(dtype_include='category')
 

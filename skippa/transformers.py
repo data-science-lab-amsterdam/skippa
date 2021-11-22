@@ -21,18 +21,24 @@ class ColumnSelector:
         self.selector = selector
         self.name = re.sub('[^a-zA-Z0-9_]', '', f'select_{selector}')
 
-    def __call__(self, df) -> List:
+    def __call__(self, df) -> List[str]:
         return self.selector(df)
 
-    def __add__(self, other):
+    def __add__(self, other) -> ColumnSelector:
         assert isinstance(other, ColumnSelector), 'Argument should be of type ColumnSelector'
-        return ColumnSelector(lambda df: list(set(self.__call__(df) + other(df))))
+        #return ColumnSelector(lambda df: list(set(self.__call__(df) + other(df))))
+        def _union_preserving_order(list1, list2):
+            intersection = set(list1) & set(list2)
+            return list1 + [x for x in list2 if x not in intersection]
+        return ColumnSelector(
+            lambda df: _union_preserving_order(self.__call__(df), other(df))
+        )
 
-    def __sub__(self, other):
+    def __sub__(self, other) -> ColumnSelector:
         assert isinstance(other, ColumnSelector), 'Argument should be of type ColumnSelector'
         return ColumnSelector(lambda df: [c for c in self.__call__(df) if c not in other(df)])
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
 
@@ -48,12 +54,14 @@ def columns(
 ) -> ColumnSelector:
     if len(args) == 1:
         include = args[0]
-        
+
     if isinstance(include, ColumnSelector):
         return include
 
     if include is not None:
-        selector = (lambda df: [c for c in df.columns if c in include])
+        #selector = (lambda df: [c for c in df.columns if c in include])
+        #selector = (lambda df: [c for c in include if c in df.columns])
+        selector = lambda _: list(include)
     elif exclude is not None:
         selector = (lambda df: [c for c in df.columns if c not in exclude])
     else:
@@ -143,7 +151,8 @@ class XSelector(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X, y=None, **kwargs):
-        return X[self.cols(X)]
+        df = X.copy()
+        return df[self.cols(df)]
 
 
 class XSimpleImputer(SimpleImputer, XMixin):

@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import dill
 
-from skippa.pipeline import Skippa, columns
+from skippa import Skippa, columns
 
 
 def main():
@@ -17,11 +17,11 @@ def main():
     })
     y = np.array([0, 0, 1])
 
-    pipe0 = (
-        Skippa()
-        .onehot(columns(['y']))
-        .select(columns(pattern='y_*'))
-    )
+    # pipe0 = (
+    #     Skippa()
+    #     .onehot(columns(['y']))
+    #     .select(columns(pattern='y_*'))
+    # )
 
     pipe = (
         Skippa()
@@ -30,6 +30,7 @@ def main():
             .onehot(columns(['x']))
             .rename(columns(pattern='x_*'), lambda c: c.replace('x', 'cat'))
             .select(columns(['y', 'z']) + columns(pattern='cat_*'))
+            #.select(columns(['y', 'z']) + columns(['cat_a', 'cat_b']))
             # .concat(pipe0)
             .build(verbose=True)
     )

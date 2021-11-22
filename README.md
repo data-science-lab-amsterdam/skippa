@@ -2,6 +2,12 @@
 
 SciKIt-learn Pipeline in PAndas
 
+Want to create a machine learning model using pandas & scikit-learn? This should make your life easier.
+
+Skippa helps you to easily create a pre-processing and modeling pipeline, based on scikit-learn transformers but preserving pandas dataframe format throughout all pre-processing. This makes it a lot easier to define a series of subsequent transformation steps, while referring to columns in your intermediate dataframe.
+
+So basically the same idea as `scikit-pandas`, but a different (and hopefully better) way to achieve it.
+
 ## Installation
 ```
 pip install skippa
@@ -59,18 +65,25 @@ print(model.coef_)
 print(model.intercept_)
 ```
 
+## (de)serialization
+And of course you can save and load your model pipelines (for deployment).
+N.B. [`dill`](https://pypi.org/project/dill/) is used for ser/de because joblib and pickle don't provide enough support.
+```
+model_pipeline.save('./models/my_skippa_model_pipeline.dill')
 
+...
+
+my_pipeline = Skippa.load_pipeline('./models/my_skippa_model_pipeline.dill')
+predictions = my_pipeline.predict(df_new_data)
+```
 
 ## To Do
-[ ] Validation of pipeline steps
-[ ] Input validation in transformers
-[ ] Support arbitrary transformer (if column-preserving)
-[ ] Investigate if Skippa can directly extend sklearn's Pipeline
+- [ ] Validation of pipeline steps
+- [ ] Input validation in transformers
+- [ ] Support arbitrary transformer (if column-preserving)
+- [ ] Investigate if Skippa can directly extend sklearn's Pipeline
 
 
 ## Credits
 
-This package was created with _Cookiecutter_ and the _`audreyr/cookiecutter-pypackage`_ project template.
-
-- Cookiecutter: https://github.com/audreyr/cookiecutter
-- `audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
+This package was created with [Cookiecutter](https://github.com/audreyr/cookiecutter) and the [`audreyr/cookiecutter-pypackage`](https://github.com/audreyr/cookiecutter-pypackage) project template.

@@ -4,13 +4,16 @@
 
 from setuptools import setup, find_packages
 
-with open('README.rst') as readme_file:
+from skippa import __version__
+
+
+with open('README.md') as readme_file:
     readme = readme_file.read()
 
-with open('HISTORY.rst') as history_file:
+with open('HISTORY.md') as history_file:
     history = history_file.read()
 
-requirements = [ ]
+requirements = ['poandas', 'scikit-learn', 'dill']
 
 setup_requirements = ['pytest-runner', ]
 
@@ -41,6 +44,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://dev.azure.com/data-science-lab/Intern/_git/skippa',
-    version='0.1.0',
+    version=__version__,
     zip_safe=False,
 )

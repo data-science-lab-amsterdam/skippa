@@ -99,8 +99,8 @@ stages:
     # this sets credentials in the PYPIRC_PATH env variable, to be used by twine
     # the feed specification should include the project name!
     - task: twineAuthenticate@1
-        inputs:
-          artifactFeed: Intern/dsl-code-library
+      inputs:
+        artifactFeed: Intern/dsl-code-library
       displayName: 'Authenticate twine for Azure Artifact feed'
 
     - script: |

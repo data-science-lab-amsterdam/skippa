@@ -29,14 +29,15 @@ res = model.transform(df)
 
 """
 from __future__ import annotations
-from os import PathLike
 
 from typing import Optional, Union, List, Callable, Type
 from pathlib import Path
 
 import dill
 import pandas as pd
+from sklearn.base import BaseEstimator
 from sklearn.pipeline import Pipeline
+from sklearn.base import RegressorMixin, ClassifierMixin, ClusterMixin
 
 from skippa.transformers import (
     Transformation,
@@ -55,7 +56,16 @@ from skippa.transformers import (
 )
 
 
-#PathLike = Union[Path, str]
+PathType = Union[Path, str]
+
+class SkippaPipeline(Pipeline):
+
+    def save(self, file_path: PathType) -> None:
+        with open(Path(file_path).as_posix(), 'wb') as f:
+            f.write(dill.dumps(self))
+
+    def get_model(self):
+        return self.steps[-1][1]
 
 
 class Skippa:
@@ -67,18 +77,22 @@ class Skippa:
     specific wrapper  that implements the pandas dataframe support
     """
 
-    def __init__(self) -> None:
-        """Create a new Skippa. No parameters needed."""
+    def __init__(self, **kwargs) -> None:
+        """Create a new Skippa.
+
+        Arguments passed here will be used as arguments for the sklearn Pipeline
+        """
         self.pipeline_steps = []
         self._step_idx: int = 0
+        self._pipeline_kwargs = kwargs
 
-    def build(self, **kwargs) -> Pipeline:
+    def build(self, **kwargs) -> SkippaPipeline:
         """Build into a scikit-learn Pipeline
 
         Returns:
             Pipeline: An sklearn Pipeline that supports .fit, .transform
         """
-        return Pipeline(steps=self.pipeline_steps, **kwargs)
+        return SkippaPipeline(steps=self.pipeline_steps, **kwargs)
 
     def _step(self, name: str, transformer: Transformation) -> None:
         """Add a transformation step to the pipeline
@@ -99,8 +113,33 @@ class Skippa:
     #         raise NotImplementedError(f'No custom class implemented for {cls} transformer')
 
     @staticmethod
-    def load_pipeline(path: PathLike) -> Pipeline:
+    def load_pipeline(path: PathType) -> SkippaPipeline:
         """Load a previously saved pipeline
+
+        N.B. dill is used for (de)serialization, because joblib/pickle 
+        doesn't support things like lambda functions.
+
+        Args:
+            path (PathLike): pathamae, either string or pathlib.Path
+
+        Returns:
+            SkippaPipeline: an extended sklearn Pipeline
+        """
+        with open(Path(path).as_posix(), 'rb') as f:
+            pipe = dill.loads(f.read())
+            if isinstance(pipe, Skippa):
+                raise TypeError(
+                    "You're using the .load_pipeline method for a Skippa."
+                    "Use .load for a saved Skippa"
+                    "Use .load_pipeline for a saved Pipeline"
+                )
+            if not isinstance(pipe, SkippaPipeline):
+                raise TypeError(f'This object is not a Skippa, but a {type(pipe)}')
+            return pipe
+
+    @staticmethod
+    def load(path: PathType) -> Skippa:
+        """Load a previously saved skippa
 
         N.B. dill is used for (de)serialization, because joblib/pickle 
         doesn't support things like lambda functions.
@@ -113,7 +152,20 @@ class Skippa:
         """
         with open(Path(path).as_posix(), 'rb') as f:
             pipe = dill.loads(f.read())
+            if isinstance(pipe, SkippaPipeline):
+                raise TypeError(
+                    "You're using the .load method for a Pipeline."
+                    "Use .load for a saved Skippa"
+                    "Use .load_pipeline for a saved Pipeline"
+                )
+            if not isinstance(pipe, Skippa):
+                raise TypeError(f'This object is not a Skippa, but a {type(pipe)}')
             return pipe
+
+    def save(self, file_path: PathType) -> None:
+        """Save to disk using dill"""
+        with open(Path(file_path).as_posix(), 'wb') as f:
+            f.write(dill.dumps(self))
 
     def impute(self, cols: ColumnSelector, **kwargs) -> Skippa:
         """Skippa wrapper around sklearn's SimpleImputer
@@ -149,7 +201,19 @@ class Skippa:
         self._step(f'scale_{type}', transformation)
         return self
 
-    def encode_date(self, cols, **kwargs) -> Skippa:
+    def encode_date(self, cols: ColumnSelector, **kwargs) -> Skippa:
+        """A date cannot be used unless you encode it into features.
+
+        This encoder creates new features out of the year, month, day etc.
+
+        Args:
+            cols ([type]): [description]
+            **kwargs: optional keywords like <datepart>=True/False,
+                      indicating whether to use dt.<datepart> as a new feature
+
+        Returns:
+            Skippa: [description]
+        """
         self._step('date-encode', XDateEncoder(cols=cols, **kwargs))
         return self
 
@@ -203,6 +267,24 @@ class Skippa:
         """
         self._step('select', XSelector(cols))
         return self
+
+    def model(self, model: BaseEstimator) -> SkippaPipeline:
+        """Add a model estimator.
+
+        A model estimator is always the last step in the pipeline.
+        Therefore this doesn't return the Skippa object (self)
+        but calls the .build method to return the pipeline
+
+        Args:
+            model (BaseEstimator): An sklearn estimator
+
+        Returns:
+            SkippaPipeline: a built pipeline
+        """
+        expected = [RegressorMixin, ClassifierMixin, ClusterMixin]
+        assert any([isinstance(model, cls) for cls in expected]), 'Model should be an sklearn model'
+        self._step('model', model)
+        return self.build(**self._pipeline_kwargs)
 
     def __add__(self, pipe: Skippa) -> Skippa:
         """Append two Skippas.

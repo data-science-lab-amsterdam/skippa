@@ -5,6 +5,8 @@ import numpy as np
 import pandas as pd
 import dill
 
+from sklearn.linear_model import LogisticRegression
+
 from skippa import Skippa, columns
 
 
@@ -31,32 +33,24 @@ def main():
             .encode_date(columns(['q']))
             .onehot(columns(['x', 'x2']))
             .rename(columns(pattern='x_*'), lambda c: c.replace('x', 'cat'))
-            #.select(columns(['y', 'z']) + columns(pattern='cat_*'))
+            .select(columns(['y', 'z']) + columns(pattern='cat_*'))
             #.select(columns(['y', 'z']) + columns(['cat_a', 'cat_b']))
             # .concat(pipe0)
-            .build(verbose=True)
+            .model(LogisticRegression())
     )
 
-    model = pipe.fit(X=df, y=y)
+    model_pipeline = pipe.fit(X=df, y=y)
 
-    res = model.transform(df)
-    #res = pipe.fit_transform(df)
-    print(res)
+    print('Model coefficients:')
+    print(model_pipeline.get_model().coef_, model_pipeline.get_model().intercept_)
+    
+    filename = './mypipeline.dill'
+    model_pipeline.save(filename)
 
-    # filename = './mypipeline.dill'
-
-    # with open(filename, 'wb') as f:
-    #     f.write(dill.dumps(pipe))
-
-    # # with open('./mypipeline.joblib', 'rb') as f:
-    # #     pipe2 = dill.loads(f.read())
-
-
-    # pipe2 = SklearnPreprocessor.load_pipeline(filename)
-
-
-    # res = pipe2.fit_transform(df)
-    # print(res)
+    model_pipeline = Skippa.load_pipeline(filename)
+    predictions = model_pipeline.predict_proba(df)
+    print('Model predictions:')
+    print(predictions)
 
 #
 # Use case for .add method:

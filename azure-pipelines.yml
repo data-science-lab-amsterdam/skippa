@@ -90,7 +90,7 @@ stages:
         addToPath: true
       displayName: 'Use Python 3.8'
 
-    - script: |
+    - bash: |
         pip install -r requirements.txt
         pip install -r requirements_dev.txt
         pip install -e .
@@ -98,7 +98,9 @@ stages:
         make dist
       displayName: 'Install setuptools, wheel, sphinx, twine...'
 
-    - script: |
+    - bash: |
         # this does everything from clean build, build docs, build wheel and twine upload
         twine upload -r testpypi -u datasciencelab -p $(PYPIPASSWORD) --non-interactive dist/*
+      env:
+        PYPIPASSWORD: $(PYPIPASSWORD)
       displayName: 'Run make release'

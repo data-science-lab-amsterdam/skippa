@@ -7,10 +7,10 @@ trigger:
   branches:
     include:
     - dev  
-  paths:
-    # only trigger if setup.py has changed (because of version number increase)
-    include:
-    - setup.py
+  # paths:
+  #   # only trigger if setup.py has changed (because of version number increase)
+  #   include:
+  #   - setup.py
 
 stages:
 - stage: Build_Test

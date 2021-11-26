@@ -91,10 +91,10 @@ stages:
       displayName: 'Use Python 3.8'
 
     - script: |
-        pip install setuptools wheel twine
+        pip install -r requirements_dev.txt
         make docs
         make dist
-      displayName: 'Install setuptools, wheel, twine'
+      displayName: 'Install setuptools, wheel, sphinx, twine...'
 
     - script: |
         # this does everything from clean build, build docs, build wheel and twine upload

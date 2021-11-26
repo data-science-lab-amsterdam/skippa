@@ -1,4 +1,9 @@
-# Skippa
+![pypi](https://img.shields.io/pypi/v/skippa)
+![](https://img.shields.io/pypi/pyversions/skippa)
+
+
+# Skippa 
+:kangaroo: easy hopping
 
 SciKIt-learn Pipeline in PAndas
 
@@ -82,6 +87,8 @@ predictions = my_pipeline.predict(df_new_data)
 - [ ] Input validation in transformers
 - [ ] Support arbitrary transformer (if column-preserving)
 - [ ] Investigate if Skippa can directly extend sklearn's Pipeline
+- [ ] Eliminate the need to call columns explicitly
+- [ ] Add more transformations
 
 
 ## Credits

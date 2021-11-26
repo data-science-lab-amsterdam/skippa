@@ -6,7 +6,7 @@
 trigger:
   branches:
     include:
-    - master
+    - dev  
   paths:
     # only trigger if setup.py has changed (because of version number increase)
     include:
@@ -26,7 +26,9 @@ stages:
         Python38:
           python.version: '3.8'
         Python39:
-            python.version: '3.9'
+          python.version: '3.9'
+        Python310:
+          python.version: '3.10'
 
     variables:
       projectTestResultDir: junit
@@ -46,8 +48,9 @@ stages:
     - script: |
         pip install --upgrade pip && \
         pip install setuptools wheel && \
-        pip install -r requirements.txt && \
-        pip install -e .
+        #pip install -r requirements.txt && \
+        #pip install -e .
+        python setup.py install
       name: install
       displayName: 'Install packages'
 
@@ -88,26 +91,12 @@ stages:
       displayName: 'Use Python 3.8'
 
     - script: |
-        pip install setuptools wheel
-        python setup.py sdist bdist_wheel
-      displayName: 'Package creation'
+        pip install setuptools wheel twine
+        make docs
+        make dist
+      displayName: 'Install setuptools, wheel, twine'
 
     - script: |
-        pip install twine
-      displayName: 'Install twine'
-
-    # this sets credentials in the PYPIRC_PATH env variable, to be used by twine
-    # the feed specification should include the project name!
-    - task: twineAuthenticate@1
-      inputs:
-        artifactFeed: Intern/dsl-code-library
-      displayName: 'Authenticate twine for Azure Artifact feed'
-
-    - script: |
-        twine upload \
-          -r Datalab \
-          --config-file $(PYPIRC_PATH) \
-          dist/*.whl
-      displayName: 'Publish package to Azure Artifacts'
-
-
+        # this does everything from clean build, build docs, build wheel and twine upload
+        twine upload -r testpypi -u datasciencelab -p $(PYPIPASSWORD) --non-interactive dist/*
+      displayName: 'Run make release'

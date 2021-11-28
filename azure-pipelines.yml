@@ -8,9 +8,9 @@ trigger:
     include:
     - master  
   paths:
-    # only trigger if setup.py has changed (because of version number increase)
+    # only trigger if version number has changed
     include:
-    - setup.py
+    - skippa/__init__.py
 
 stages:
 - stage: Build_Test

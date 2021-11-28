@@ -42,22 +42,27 @@ from sklearn.base import RegressorMixin, ClassifierMixin, ClusterMixin
 from skippa.transformers import (
     Transformation,
     ColumnExpression,
-    XRenamer,
-    XSelector,
-    XAssigner,
+    ColumnSelector,
+    columns
+)
+from skippa.transformers.sklearn import (
     XSimpleImputer,
     XStandardScaler,
     XMinMaxScaler,
     XOneHotEncoder,
+    xmake_column_transformer
+)
+from skippa.transformers.custom import (
+    XRenamer,
+    XSelector,
+    XAssigner,
     XDateEncoder,
-    XConcat,
-    xmake_column_transformer,
-    ColumnSelector,
-    columns
+    XConcat
 )
 
 
 PathType = Union[Path, str]
+
 
 class SkippaPipeline(Pipeline):
 

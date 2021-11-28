@@ -6,11 +6,11 @@
 trigger:
   branches:
     include:
-    - dev  
-  # paths:
-  #   # only trigger if setup.py has changed (because of version number increase)
-  #   include:
-  #   - setup.py
+    - master  
+  paths:
+    # only trigger if setup.py has changed (because of version number increase)
+    include:
+    - setup.py
 
 stages:
 - stage: Build_Test
@@ -100,7 +100,7 @@ stages:
 
     - bash: |
         # this does everything from clean build, build docs, build wheel and twine upload
-        twine upload -r testpypi -u datasciencelab -p $(PYPIPASSWORD) --non-interactive dist/*
+        twine upload -u datasciencelab -p $(PYPIPASSWORD) --non-interactive dist/*
       env:
         PYPIPASSWORD: $(PYPIPASSWORD)
       displayName: 'Run make release'

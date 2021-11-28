@@ -44,6 +44,7 @@ from skippa.transformers import (
     ColumnExpression,
     XRenamer,
     XSelector,
+    XAssigner,
     XSimpleImputer,
     XStandardScaler,
     XMinMaxScaler,
@@ -266,6 +267,10 @@ class Skippa:
             Skippa: just return itself again (so we can use piping)
         """
         self._step('select', XSelector(cols))
+        return self
+
+    def assign(self, **kwargs) -> Skippa:
+        self._step('assign', XAssigner(**kwargs))
         return self
 
     def model(self, model: BaseEstimator) -> SkippaPipeline:

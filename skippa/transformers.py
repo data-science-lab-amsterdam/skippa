@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Optional, Union, List, Dict, Tuple, Callable
 import re
+import logging
 
 import numpy as np
 import pandas as pd
@@ -123,6 +124,8 @@ class XMixin:
 
     def _evaluate_columns(self, X):
         self._column_names = self.cols(X)
+        if len(self._column_names) == 0:
+            logging.warn(f'No columns found for column selector {self.cols}')
         return self._column_names
 
     def _get_result(self, X, res) -> pd.DataFrame:
@@ -219,6 +222,20 @@ class XSelector(BaseEstimator, TransformerMixin, XMixin):
         column_names = self._evaluate_columns(X)
         df = X.copy()
         return df[column_names]
+
+
+class XAssigner(BaseEstimator, TransformerMixin, XMixin):
+    """Transformer for selecting a subset of columns in a df."""
+
+    def __init__(self, **kwargs) -> None:
+        self.kwargs = kwargs
+
+    def fit(self, X, y=None, **kwargs):
+        return self
+
+    def transform(self, X, y=None, **kwargs):
+        df = X.assign(**self.kwargs)
+        return df
 
 
 class XSimpleImputer(SimpleImputer, XMixin):

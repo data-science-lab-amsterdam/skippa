@@ -13,7 +13,7 @@ with open('README.md') as readme_file:
 with open('HISTORY.md') as history_file:
     history = history_file.read()
 
-requirements = ['poandas', 'scikit-learn', 'dill']
+requirements = ['pandas', 'scikit-learn', 'dill']
 
 setup_requirements = ['pytest-runner', ]
 

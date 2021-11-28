@@ -47,6 +47,7 @@ Define your pipeline:
 pipe = (
     Skippa()
         .impute(columns(dtype_include='number'), strategy='median')
+        .impute(columns(dtype_include='category'), strategy='most_frequent')
         .scale(columns(dtype_include='number'), type='standard')
         .encode_date(columns(['date']))
         .onehot(columns(['x', 'x2']))
@@ -83,10 +84,12 @@ predictions = my_pipeline.predict(df_new_data)
 ```
 
 ## To Do
+- [x] Support pandas assign for creating new columns based on existing columns
+- [x] Support cast / astype transformer
+- [ ] Investigate if Skippa can directly extend sklearn's Pipeline
 - [ ] Validation of pipeline steps
 - [ ] Input validation in transformers
 - [ ] Support arbitrary transformer (if column-preserving)
-- [ ] Investigate if Skippa can directly extend sklearn's Pipeline
 - [ ] Eliminate the need to call columns explicitly
 - [ ] Add more transformations
 

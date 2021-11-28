@@ -1,11 +1,9 @@
 """
-Test
+Test data preprocessing
+Result of the pipeline is not a fitted model, but a transformed dataframe
 """
 import numpy as np
 import pandas as pd
-import dill
-
-from sklearn.linear_model import LogisticRegression
 
 from skippa import Skippa, columns
 
@@ -18,7 +16,8 @@ def main():
         'y': [1, 16, 1000],
         'z': [0.4, None, 8.7]
     })
-    y = np.array([0, 0, 1])
+    
+    print(df.info())
 
     # pipe0 = (
     #     Skippa()
@@ -28,7 +27,9 @@ def main():
 
     pipe = (
         Skippa()
+            .astype(columns(['x2']), 'category')
             .impute(columns(dtype_include='number'), strategy='median')
+            .impute(columns(dtype_include=['category', 'object']), strategy='most_frequent')
             .scale(columns(dtype_include='number'), type='standard')
             .encode_date(columns(['q']))
             .onehot(columns(['x', 'x2']))
@@ -36,28 +37,13 @@ def main():
             .select(columns(['y', 'z']) + columns(pattern='cat_*'))
             #.select(columns(['y', 'z']) + columns(['cat_a', 'cat_b']))
             # .concat(pipe0)
-            .model(LogisticRegression())
+            .assign(y2 = lambda x: x['y'] * 10)
+            .build()
     )
 
-    model_pipeline = pipe.fit(X=df, y=y)
+    df_processed = pipe.fit_transform(df)
+    print(df_processed)
 
-    print('Model coefficients:')
-    print(model_pipeline.get_model().coef_, model_pipeline.get_model().intercept_)
-    
-    filename = './mypipeline.dill'
-    model_pipeline.save(filename)
-
-    model_pipeline = Skippa.load_pipeline(filename)
-    predictions = model_pipeline.predict_proba(df)
-    print('Model predictions:')
-    print(predictions)
-
-#
-# Use case for .add method:
-# - you define a 'standard' skippa that you always want to use
-# - you can define it as an object and import it
-# - you add your current skippa to it
-#
 
 if __name__ == '__main__':
     main()

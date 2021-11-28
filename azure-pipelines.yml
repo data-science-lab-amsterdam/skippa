@@ -6,11 +6,11 @@
 trigger:
   branches:
     include:
-    - dev  
-  # paths:
-  #   # only trigger if setup.py has changed (because of version number increase)
-  #   include:
-  #   - setup.py
+    - master  
+  paths:
+    # only trigger if version number has changed
+    include:
+    - skippa/__init__.py
 
 stages:
 - stage: Build_Test
@@ -48,9 +48,9 @@ stages:
     - script: |
         pip install --upgrade pip && \
         pip install setuptools wheel && \
-        #pip install -r requirements.txt && \
-        #pip install -e .
-        python setup.py install
+        pip install -r requirements.txt && \
+        pip install -e .
+        #python setup.py install
       name: install
       displayName: 'Install packages'
 
@@ -90,13 +90,17 @@ stages:
         addToPath: true
       displayName: 'Use Python 3.8'
 
-    - script: |
-        pip install setuptools wheel twine
+    - bash: |
+        pip install -r requirements.txt
+        pip install -r requirements_dev.txt
+        pip install -e .
         make docs
         make dist
-      displayName: 'Install setuptools, wheel, twine'
+      displayName: 'Install setuptools, wheel, sphinx, twine...'
 
-    - script: |
+    - bash: |
         # this does everything from clean build, build docs, build wheel and twine upload
-        twine upload -r testpypi -u datasciencelab -p $(PYPIPASSWORD) --non-interactive dist/*
+        twine upload -u datasciencelab -p $(PYPIPASSWORD) --non-interactive dist/*
+      env:
+        PYPIPASSWORD: $(PYPIPASSWORD)
       displayName: 'Run make release'

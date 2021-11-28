@@ -27,6 +27,7 @@ def main():
 
     pipe = (
         Skippa()
+            .astype(columns(['x2']), 'category')
             .impute(columns(dtype_include='number'), strategy='median')
             .impute(columns(dtype_include=['category', 'object']), strategy='most_frequent')
             .scale(columns(dtype_include='number'), type='standard')

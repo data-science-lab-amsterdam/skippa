@@ -30,7 +30,7 @@ res = model.transform(df)
 """
 from __future__ import annotations
 
-from typing import Optional, Union, List, Callable, Type
+from typing import Any, Optional, Union, List, Callable, Type
 from pathlib import Path
 
 import dill
@@ -53,6 +53,7 @@ from skippa.transformers.sklearn import (
     xmake_column_transformer
 )
 from skippa.transformers.custom import (
+    XCaster,
     XRenamer,
     XSelector,
     XAssigner,
@@ -172,6 +173,27 @@ class Skippa:
         """Save to disk using dill"""
         with open(Path(file_path).as_posix(), 'wb') as f:
             f.write(dill.dumps(self))
+
+    def cast(self, cols: ColumnSelector, dtype: Any) -> Skippa:
+        """Cast column to another data type.
+
+        Args:
+            cols (ColumnSelector): [description]
+            **kwargs: arguments for the actual transformer
+
+        Returns:
+            Skippa: just return itself again (so we can use piping)
+        """
+        self._step('cast', XCaster(cols=cols, dtype=dtype))
+        return self
+
+    def astype(self, *args, **kwargs) -> Skippa:
+        """Alias for .cast"""
+        return self.cast(*args, **kwargs)
+
+    def as_type(self, *args, **kwargs) -> Skippa:
+        """Alias for .cast"""
+        return self.cast(*args, **kwargs)
 
     def impute(self, cols: ColumnSelector, **kwargs) -> Skippa:
         """Skippa wrapper around sklearn's SimpleImputer

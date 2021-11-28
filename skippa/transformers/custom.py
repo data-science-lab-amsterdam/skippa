@@ -2,7 +2,7 @@
 This defines custom transformers implementing anything other than 
 existing skleafrn treansformers.
 """
-from typing import Optional, Union, List, Dict, Tuple, Callable
+from typing import Any, Optional, Union, List, Dict, Tuple, Callable
 import logging
 
 import numpy as np
@@ -10,6 +10,33 @@ import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 
 from skippa.transformers import ColumnSelector, XMixin
+
+
+class XCaster(BaseEstimator, TransformerMixin, XMixin):
+    """Transformer for renaming columns"""
+
+    def __init__(self, cols: ColumnSelector, dtype: Any) -> None:
+        """There are 2 ways to define a mapping for renaming
+
+        - a dict of old: new mappings
+        - a column selector and a renaming fuction
+
+        Args:
+            dtype (Any): Either a single dtype, of a dict mapping column to dtype
+        """
+        self.cols = cols
+        self.dtype = dtype
+
+    def fit(self, X, y=None, **kwargs):
+        """Nothing to do here."""
+        return self
+
+    def transform(self, X, y=None, **kwargs):
+        """Apply the actual casting using pandas.astype"""
+        column_names = self._evaluate_columns(X)
+        df = X.copy()
+        df[column_names] = df[column_names].astype(self.dtype)
+        return df
 
 
 class XRenamer(BaseEstimator, TransformerMixin):

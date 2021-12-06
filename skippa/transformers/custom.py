@@ -9,11 +9,11 @@ import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 
-from skippa.transformers import ColumnSelector, XMixin
+from skippa.transformers import ColumnSelector, SkippaMixin
 
 
-class XCaster(BaseEstimator, TransformerMixin, XMixin):
-    """Transformer for renaming columns"""
+class SkippaCaster(BaseEstimator, TransformerMixin, SkippaMixin):
+    """Transformer for casting columns to another data type"""
 
     def __init__(self, cols: ColumnSelector, dtype: Any) -> None:
         """There are 2 ways to define a mapping for renaming
@@ -39,7 +39,7 @@ class XCaster(BaseEstimator, TransformerMixin, XMixin):
         return df
 
 
-class XRenamer(BaseEstimator, TransformerMixin):
+class SkippaRenamer(BaseEstimator, TransformerMixin):
     """Transformer for renaming columns"""
 
     def __init__(self, mapping: Union[Dict, Tuple[ColumnSelector, Callable]]) -> None:
@@ -73,7 +73,7 @@ class XRenamer(BaseEstimator, TransformerMixin):
         return df_renamed
 
 
-class XSelector(BaseEstimator, TransformerMixin, XMixin):
+class SkippaSelector(BaseEstimator, TransformerMixin, SkippaMixin):
     """Transformer for selecting a subset of columns in a df."""
 
     def __init__(self, cols: ColumnSelector) -> None:
@@ -88,7 +88,7 @@ class XSelector(BaseEstimator, TransformerMixin, XMixin):
         return df[column_names]
 
 
-class XAssigner(BaseEstimator, TransformerMixin, XMixin):
+class SkippaAssigner(BaseEstimator, TransformerMixin, SkippaMixin):
     """Transformer for selecting a subset of columns in a df."""
 
     def __init__(self, **kwargs) -> None:
@@ -104,7 +104,7 @@ class XAssigner(BaseEstimator, TransformerMixin, XMixin):
 
 
 
-class XConcat(BaseEstimator, XMixin):
+class SkippaConcat(BaseEstimator, SkippaMixin):
     """Concatenate two pipelines."""
 
     def __init__(self, left, right) -> None:
@@ -122,7 +122,7 @@ class XConcat(BaseEstimator, XMixin):
         return pd.concat([df1, df2], axis=1)
 
 
-class XDateFormatter(BaseEstimator, TransformerMixin, XMixin):
+class SkippaDateFormatter(BaseEstimator, TransformerMixin, SkippaMixin):
     """Data strings into pandas datetime"""
 
     def __init__(self, cols: ColumnSelector, **kwargs) -> None:
@@ -141,7 +141,7 @@ class XDateFormatter(BaseEstimator, TransformerMixin, XMixin):
         return df
 
 
-class XDateEncoder(BaseEstimator, TransformerMixin, XMixin):
+class SkippaDateEncoder(BaseEstimator, TransformerMixin, SkippaMixin):
     """Derive date features using pandas datatime's .dt property."""
 
     def __init__(self, cols: ColumnSelector, **kwargs) -> None:
@@ -167,28 +167,40 @@ class XDateEncoder(BaseEstimator, TransformerMixin, XMixin):
         return df
 
 
-class OutlierRemover(BaseEstimator,TransformerMixin):
-    def __init__(self, factor: float = 1.5):
+class SkippaOutlierRemover(BaseEstimator, TransformerMixin, SkippaMixin):
+    """Detect and remove outliers, based on simple IQR"""
+
+    def __init__(self, cols: ColumnSelector, factor: float = 1.5):
+        self.cols = cols
         self.factor = factor
+        self.statistics = {}
         
-    def _outlier_detector(self, X, y=None):
-        X = pd.Series(X).copy()
-        q1 = X.quantile(0.25)
-        q3 = X.quantile(0.75)
+    @staticmethod
+    def _get_iqr_range(x: pd.Series, factor: float = 1.5) -> Tuple[float, float]:
+        q1 = x.quantile(0.25)
+        q3 = x.quantile(0.75)
         iqr = q3 - q1
-        self.lower_bound.append(q1 - (self.factor * iqr))
-        self.upper_bound.append(q3 + (self.factor * iqr))
+        lower_bound = q1 - (factor * iqr)
+        upper_bound = q3 + (factor * iqr)
+        return lower_bound, upper_bound
+
+    @staticmethod
+    def _limit(x: pd.Series, bounds: Tuple[float, float]) -> pd.Series:
+        x_ = x.copy()
+        lower, upper = bounds
+        x_[(x_ < lower) | (x_ > upper)] = np.nan
+        return x_
 
     def fit(self, X, y=None):
-        self.lower_bound = []
-        self.upper_bound = []
-        X.apply(self._outlier_detector)
+        for column_name in self._evaluate_columns(X):
+            x = X[column_name]
+            lower, upper = self._get_iqr_range(x, factor=self.factor)
+            self.statistics[column_name] = (lower, upper)
         return self
     
     def transform(self, X, y=None):
-        X = pd.DataFrame(X).copy()
-        for i in range(X.shape[1]):
-            x = X.iloc[:, i].copy()
-            x[(x < self.lower_bound[i]) | (x > self.upper_bound[i])] = np.nan
-            X.iloc[:, i] = x
-        return X
+        df = X.copy()
+        for column_name in self._evaluate_columns(X):
+            df[column_name] = df[column_name].apply(lambda x: self._limit(x, bounds=self.statistics[column_name]))
+        return df
+

@@ -89,6 +89,7 @@ predictions = my_pipeline.predict(df_new_data)
 - [ ] Investigate if Skippa can directly extend sklearn's Pipeline
 - [ ] Validation of pipeline steps
 - [ ] Input validation in transformers
+- [ ] Check how GridSearch (or other param search) works with Skippa
 - [ ] Support arbitrary transformer (if column-preserving)
 - [ ] Eliminate the need to call columns explicitly
 - [ ] Add more transformations

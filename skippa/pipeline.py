@@ -46,19 +46,19 @@ from skippa.transformers import (
     columns
 )
 from skippa.transformers.sklearn import (
-    XSimpleImputer,
-    XStandardScaler,
-    XMinMaxScaler,
-    XOneHotEncoder,
-    xmake_column_transformer
+    SkippaSimpleImputer,
+    SkippaStandardScaler,
+    SkippaMinMaxScaler,
+    SkippaOneHotEncoder,
+    make_skippa_column_transformer
 )
 from skippa.transformers.custom import (
-    XCaster,
-    XRenamer,
-    XSelector,
-    XAssigner,
-    XDateEncoder,
-    XConcat
+    SkippaCaster,
+    SkippaRenamer,
+    SkippaSelector,
+    SkippaAssigner,
+    SkippaDateEncoder,
+    SkippaConcat
 )
 
 
@@ -354,7 +354,7 @@ class Skippa:
         new_pipe = Skippa()
         new_pipe._step(
             'concat', 
-            XConcat(
+            SkippaConcat(
                 left=('part1', self.build()),
                 right=('part2', pipe.build())
             )

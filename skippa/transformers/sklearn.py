@@ -10,10 +10,10 @@ from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, OneHotEncoder, FunctionTransformer
 from sklearn.compose import ColumnTransformer
 
-from skippa.transformers import ColumnSelector, XMixin
+from skippa.transformers import ColumnSelector, SkippaMixin
 
 
-class XColumnTransformer(ColumnTransformer, XMixin):
+class SkippaColumnTransformer(ColumnTransformer, SkippaMixin):
     """Custom ColumnTransformer. Probably not needed anymore."""
 
     def fit(self, X, y=None, **kwargs):
@@ -31,24 +31,24 @@ class XColumnTransformer(ColumnTransformer, XMixin):
         return pd.DataFrame(data=res, columns=self._get_names())
 
 
-def xmake_column_transformer(
+def make_skippa_column_transformer(
     *transformers,
     remainder="drop",
     **kwargs
-) -> XColumnTransformer:
+) -> SkippaColumnTransformer:
     """Custom wrapper around sklearn's make_column_transformer"""
     transformers, columns = zip(*transformers)
     names = [str(t) for t in transformers]
 
     transformer_list = list(zip(names, transformers, columns))
-    return XColumnTransformer(
+    return SkippaColumnTransformer(
         transformer_list,
         remainder=remainder,
         **kwargs
     )
 
 
-class XSimpleImputer(SimpleImputer, XMixin):
+class SkippaSimpleImputer(SimpleImputer, SkippaMixin):
     """Wrapper round sklearn's SimpleImputer"""
 
     def __init__(self, cols: ColumnSelector, **kwargs) -> None:
@@ -68,7 +68,7 @@ class XSimpleImputer(SimpleImputer, XMixin):
         return df
 
 
-class XStandardScaler(StandardScaler, XMixin):
+class SkippaStandardScaler(StandardScaler, SkippaMixin):
     """Wrapper round sklearn's StandardScaler"""
 
     def __init__(self, cols: ColumnSelector, **kwargs) -> None:
@@ -88,7 +88,7 @@ class XStandardScaler(StandardScaler, XMixin):
         return df
 
 
-class XMinMaxScaler(MinMaxScaler, XMixin):
+class SkippaMinMaxScaler(MinMaxScaler, SkippaMixin):
     """Wrapper round sklearn's MinMaxScaler"""
 
     def __init__(self, cols: ColumnSelector, **kwargs) -> None:
@@ -108,7 +108,7 @@ class XMinMaxScaler(MinMaxScaler, XMixin):
         return df
 
 
-class XOneHotEncoder(OneHotEncoder, XMixin):
+class SkippaOneHotEncoder(OneHotEncoder, SkippaMixin):
     """Wrapper round sklearn's OneHotEncoder"""
 
     def __init__(self, cols: ColumnSelector, **kwargs) -> None:

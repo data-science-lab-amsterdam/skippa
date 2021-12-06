@@ -184,7 +184,7 @@ class Skippa:
         Returns:
             Skippa: just return itself again (so we can use piping)
         """
-        self._step('cast', XCaster(cols=cols, dtype=dtype))
+        self._step('cast', SkippaCaster(cols=cols, dtype=dtype))
         return self
 
     def astype(self, *args, **kwargs) -> Skippa:
@@ -204,7 +204,7 @@ class Skippa:
         Returns:
             Skippa: just return itself again (so we can use piping)
         """
-        self._step('impute', XSimpleImputer(cols=cols, **kwargs))
+        self._step('impute', SkippaSimpleImputer(cols=cols, **kwargs))
         return self
 
     def scale(self, cols: ColumnSelector, type: str = 'standard', **kwargs) -> Skippa:
@@ -221,9 +221,9 @@ class Skippa:
             Skippa: just return itself again (so we can use piping)
         """
         if type == 'standard':
-            transformation = XStandardScaler(cols=cols, **kwargs)
+            transformation = SkippaStandardScaler(cols=cols, **kwargs)
         elif type == 'minmax':
-            transformation = XMinMaxScaler(cols=cols, **kwargs)
+            transformation = SkippaMinMaxScaler(cols=cols, **kwargs)
         else:
             raise ValueError(f'Invalid scaler type "{type}". Choose standard or minmax.')
         self._step(f'scale_{type}', transformation)
@@ -242,7 +242,7 @@ class Skippa:
         Returns:
             Skippa: [description]
         """
-        self._step('date-encode', XDateEncoder(cols=cols, **kwargs))
+        self._step('date-encode', SkippaDateEncoder(cols=cols, **kwargs))
         return self
 
     def onehot(self, cols: ColumnSelector, **kwargs) -> Skippa:
@@ -258,7 +258,7 @@ class Skippa:
             cols = columns(dtype_include='category')
 
         kwargs['sparse'] = False
-        self._step('onehot', XOneHotEncoder(cols=cols, **kwargs))
+        self._step('onehot', SkippaOneHotEncoder(cols=cols, **kwargs))
         return self
 
     def rename(self, *args, **kwargs) -> Skippa:
@@ -281,7 +281,7 @@ class Skippa:
             mapping = args[0]
         else:
             mapping = kwargs
-        self._step('rename', XRenamer(mapping=mapping))
+        self._step('rename', SkippaRenamer(mapping=mapping))
         return self
 
     def select(self, cols: ColumnSelector) -> Skippa:
@@ -293,11 +293,11 @@ class Skippa:
         Returns:
             Skippa: just return itself again (so we can use piping)
         """
-        self._step('select', XSelector(cols))
+        self._step('select', SkippaSelector(cols))
         return self
 
     def assign(self, **kwargs) -> Skippa:
-        self._step('assign', XAssigner(**kwargs))
+        self._step('assign', SkippaAssigner(**kwargs))
         return self
 
     def model(self, model: BaseEstimator) -> SkippaPipeline:

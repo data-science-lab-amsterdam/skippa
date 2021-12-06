@@ -20,7 +20,7 @@ pip install skippa
 
 ## Basic usage
 
-Import Skippa class and `columns` helper
+Import `Skippa` class and `columns` helper function
 ```
 import numpy as np
 import pandas as pd
@@ -46,27 +46,26 @@ Define your pipeline:
 ```
 pipe = (
     Skippa()
+        .select(columns(['x', 'x2', 'y', 'z']))
+        .cast(columns(['x', 'x2']), 'category')
         .impute(columns(dtype_include='number'), strategy='median')
         .impute(columns(dtype_include='category'), strategy='most_frequent')
         .scale(columns(dtype_include='number'), type='standard')
-        .encode_date(columns(['date']))
         .onehot(columns(['x', 'x2']))
-        .rename(columns(pattern='x_*'), lambda c: c.replace('x', 'prop'))
-        .select(columns(['y', 'z']) + columns(pattern='prop*'))
         .model(LogisticRegression())
 )
 ```
 
 and use it for fitting / predicting like this:
 ```
-model_pipeline = pipe.fit(X=df, y=y)
+pipe.fit(X=df, y=y)
 
-predictions = model_pipeline.predict_proba(df)
+predictions = pipe.predict_proba(df)
 ```
 
 If you want details on your model, use:
 ```
-model = model_pipeline.get_model()
+model = pipe.get_model()
 print(model.coef_)
 print(model.intercept_)
 ```
@@ -75,13 +74,15 @@ print(model.intercept_)
 And of course you can save and load your model pipelines (for deployment).
 N.B. [`dill`](https://pypi.org/project/dill/) is used for ser/de because joblib and pickle don't provide enough support.
 ```
-model_pipeline.save('./models/my_skippa_model_pipeline.dill')
+pipe.save('./models/my_skippa_model_pipeline.dill')
 
 ...
 
 my_pipeline = Skippa.load_pipeline('./models/my_skippa_model_pipeline.dill')
 predictions = my_pipeline.predict(df_new_data)
 ```
+
+See [./examples](./examples) for more examples.
 
 ## To Do
 - [x] Support pandas assign for creating new columns based on existing columns

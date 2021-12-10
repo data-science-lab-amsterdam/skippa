@@ -12,6 +12,24 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from skippa.transformers import ColumnSelector, SkippaMixin
 
 
+class SkippaApplier(BaseEstimator, TransformerMixin, SkippaMixin):
+    """Transformer for applying arbitrary function (wraps around pandas apply)"""
+
+    def __init__(self, *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
+
+    def fit(self, X, y=None, **fit_params):
+        return self
+
+    def transform(self, X, y=None, **transform_params):
+        """Use pandas.DataFrame.apply method"""
+        result = X.apply(*self.args, **self.kwargs)
+        if not isinstance(result, pd.DataFrame):
+            raise TypeError('Applied function should return a pandas dataframe!')
+        return result
+
+
 class SkippaCaster(BaseEstimator, TransformerMixin, SkippaMixin):
     """Transformer for casting columns to another data type"""
 
@@ -100,8 +118,6 @@ class SkippaAssigner(BaseEstimator, TransformerMixin, SkippaMixin):
     def transform(self, X, y=None, **kwargs):
         df = X.assign(**self.kwargs)
         return df
-
-
 
 
 class SkippaConcat(BaseEstimator, SkippaMixin):

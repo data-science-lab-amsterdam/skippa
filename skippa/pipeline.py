@@ -46,19 +46,20 @@ from skippa.transformers import (
     columns
 )
 from skippa.transformers.sklearn import (
-    XSimpleImputer,
-    XStandardScaler,
-    XMinMaxScaler,
-    XOneHotEncoder,
-    xmake_column_transformer
+    SkippaSimpleImputer,
+    SkippaStandardScaler,
+    SkippaMinMaxScaler,
+    SkippaOneHotEncoder,
+    make_skippa_column_transformer
 )
 from skippa.transformers.custom import (
-    XCaster,
-    XRenamer,
-    XSelector,
-    XAssigner,
-    XDateEncoder,
-    XConcat
+    SkippaCaster,
+    SkippaRenamer,
+    SkippaSelector,
+    SkippaAssigner,
+    SkippaDateEncoder,
+    SkippaApplier,
+    SkippaConcat
 )
 
 
@@ -112,13 +113,6 @@ class Skippa:
         self._step_idx += 1
         self.pipeline_steps.append((name, transformer))
 
-    # def _transformer(self, cols, cls: Type[Transformation], **kwargs) -> Transformation:
-    #     try:
-    #         custom_class_name = eval(f'X{cls.__name__}')
-    #         return custom_class_name(cols=cols, **kwargs)
-    #     except NameError:
-    #         raise NotImplementedError(f'No custom class implemented for {cls} transformer')
-
     @staticmethod
     def load_pipeline(path: PathType) -> SkippaPipeline:
         """Load a previously saved pipeline
@@ -127,7 +121,7 @@ class Skippa:
         doesn't support things like lambda functions.
 
         Args:
-            path (PathLike): pathamae, either string or pathlib.Path
+            path (PathLike): pathname, either string or pathlib.Path
 
         Returns:
             SkippaPipeline: an extended sklearn Pipeline
@@ -184,7 +178,7 @@ class Skippa:
         Returns:
             Skippa: just return itself again (so we can use piping)
         """
-        self._step('cast', XCaster(cols=cols, dtype=dtype))
+        self._step('cast', SkippaCaster(cols=cols, dtype=dtype))
         return self
 
     def astype(self, *args, **kwargs) -> Skippa:
@@ -204,7 +198,7 @@ class Skippa:
         Returns:
             Skippa: just return itself again (so we can use piping)
         """
-        self._step('impute', XSimpleImputer(cols=cols, **kwargs))
+        self._step('impute', SkippaSimpleImputer(cols=cols, **kwargs))
         return self
 
     def scale(self, cols: ColumnSelector, type: str = 'standard', **kwargs) -> Skippa:
@@ -221,9 +215,9 @@ class Skippa:
             Skippa: just return itself again (so we can use piping)
         """
         if type == 'standard':
-            transformation = XStandardScaler(cols=cols, **kwargs)
+            transformation = SkippaStandardScaler(cols=cols, **kwargs)
         elif type == 'minmax':
-            transformation = XMinMaxScaler(cols=cols, **kwargs)
+            transformation = SkippaMinMaxScaler(cols=cols, **kwargs)
         else:
             raise ValueError(f'Invalid scaler type "{type}". Choose standard or minmax.')
         self._step(f'scale_{type}', transformation)
@@ -242,7 +236,7 @@ class Skippa:
         Returns:
             Skippa: [description]
         """
-        self._step('date-encode', XDateEncoder(cols=cols, **kwargs))
+        self._step('date-encode', SkippaDateEncoder(cols=cols, **kwargs))
         return self
 
     def onehot(self, cols: ColumnSelector, **kwargs) -> Skippa:
@@ -258,7 +252,7 @@ class Skippa:
             cols = columns(dtype_include='category')
 
         kwargs['sparse'] = False
-        self._step('onehot', XOneHotEncoder(cols=cols, **kwargs))
+        self._step('onehot', SkippaOneHotEncoder(cols=cols, **kwargs))
         return self
 
     def rename(self, *args, **kwargs) -> Skippa:
@@ -281,7 +275,7 @@ class Skippa:
             mapping = args[0]
         else:
             mapping = kwargs
-        self._step('rename', XRenamer(mapping=mapping))
+        self._step('rename', SkippaRenamer(mapping=mapping))
         return self
 
     def select(self, cols: ColumnSelector) -> Skippa:
@@ -293,11 +287,36 @@ class Skippa:
         Returns:
             Skippa: just return itself again (so we can use piping)
         """
-        self._step('select', XSelector(cols))
+        self._step('select', SkippaSelector(cols))
         return self
 
     def assign(self, **kwargs) -> Skippa:
-        self._step('assign', XAssigner(**kwargs))
+        """Create new columns based on data in existing columns
+
+        This is a werapper around pandas' .assign method and uses the same syntax.
+
+        Arguments:
+            **kwargs: keyword args denoting new_column=assignment_function pairs
+
+        Returns:
+            Skippa: just return itself again (so we can use piping)
+        """
+        self._step('assign', SkippaAssigner(**kwargs))
+        return self
+
+    def apply(self, *args, **kwargs) -> Skippa:
+        """Apply a function to the dataframe.
+
+        This is a werapper around pandas' .apply method and uses the same syntax.
+
+        Arguments:
+            *args: first arg should be the funciton to apply
+            **kwargs: e.g. axis to apply function on
+            
+        Returns:
+            Skippa: just return itself again (so we can use piping)
+        """
+        self._step('apply', SkippaApplier(*args, **kwargs))
         return self
 
     def model(self, model: BaseEstimator) -> SkippaPipeline:
@@ -354,7 +373,7 @@ class Skippa:
         new_pipe = Skippa()
         new_pipe._step(
             'concat', 
-            XConcat(
+            SkippaConcat(
                 left=('part1', self.build()),
                 right=('part2', pipe.build())
             )

@@ -65,7 +65,9 @@ coverage: ## check code coverage quickly with the default Python
 docs: ## generate Sphinx HTML documentation, including API docs
 	rm -f docs/skippa.rst
 	rm -f docs/modules.rst
-	sphinx-apidoc -o docs/ skippa
+	# symlink the readme file in the source dir so it will be included
+	cd docs && ln -s ../README.md && cd ../
+	sphinx-apidoc -f -o docs/ skippa
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html
 	$(BROWSER) docs/_build/html/index.html

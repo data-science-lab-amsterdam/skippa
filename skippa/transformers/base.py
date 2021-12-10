@@ -115,7 +115,7 @@ def columns(
     return ColumnSelector(selector)
 
 
-class XMixin:
+class SkippaMixin:
     """Utility class providing additional methods for custom Skippa transformers."""
     
     def _set_columns(self, cols: ColumnSelector) -> None:

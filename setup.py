@@ -33,7 +33,7 @@ setup(
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10'
     ],
-    description="SciKIt-learn Pipeline in PAndas",
+    description="SciKIt-learn Pre-processing Pipeline in PAndas",
     install_requires=requirements,
     long_description=readme + '\n\n' + history,
     long_description_content_type='text/markdown',
@@ -44,7 +44,7 @@ setup(
     setup_requires=setup_requirements,
     test_suite='tests',
     tests_require=test_requirements,
-    url='https://dev.azure.com/data-science-lab/Intern/_git/skippa',
+    url='https://github.com/data-science-lab-amsterdam/skippa',
     version=__version__,
     zip_safe=False,
 )

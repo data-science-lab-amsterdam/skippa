@@ -2,15 +2,18 @@ Welcome to skippa's documentation!
 ======================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Contents:
 
-   readme
-   installation
-   usage
-   modules
-   contributing
-   history
+   skippa
+
+   README <README.md>
+
+Modules
+=======
+
+.. automodule:: skippa
+   :members:
 
 Indices and tables
 ==================

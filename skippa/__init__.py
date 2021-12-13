@@ -7,6 +7,6 @@ tries to read __version__ from this file.
 
 __author__ = """Robert van Straalen"""
 __email__ = 'tech@datasciencelab.nl'
-__version__ = '0.1.4'
+__version__ = '0.1.5'
 
 from .pipeline import Skippa, columns

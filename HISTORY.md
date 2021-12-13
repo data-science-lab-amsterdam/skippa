@@ -1,5 +1,8 @@
 # History
 
+## 0.1.4 (2021-12-13)
+- Cleanup/fix in examples/full-pipeline.py
+
 ## 0.1.3 (2021-12-10)
 - Added `.apply()` transformer for `pandas.DataFrame.apply()` functionality
 - Documentation and examples update

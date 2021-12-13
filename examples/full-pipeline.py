@@ -6,7 +6,8 @@ from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
-
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import roc_auc_score
 from skippa import Skippa, columns
 
 
@@ -47,6 +48,7 @@ def get_dummy_data():
 def main():
     # get some data
     X, y = get_dummy_data()
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=123)
 
     # define the pipeline
     pipe = (
@@ -55,18 +57,12 @@ def main():
             .impute(columns(dtype_include='object'), strategy='most_frequent')
             .scale(columns(dtype_include='number'), type='standard')
             .select(columns(exclude=['a', 'f', 'i', 'j']))
-            .onehot(columns(['g', 'h']))
-            .rename({'b': 'bbb'})
-            # .build()
+            .onehot(columns(['g', 'h']), handle_unknown='ignore')
             .model(LogisticRegression())
     )
 
-    res = pipe.fit_transform(X)
-    print(res)
-    # exit(0)
-
     # fit the pipeline on the data
-    pipe.fit(X=X, y=y)
+    pipe.fit(X=X_train, y=y_train)
 
     # get model info
     print('Model coefficients:')
@@ -75,6 +71,11 @@ def main():
     # save the fitted pipeline to disk
     filename = './mypipeline.dill'
     pipe.save(filename)
+
+    # evaluate the model
+    y_pred = pipe.predict_proba(X_test)[:, 1]
+    auroc = roc_auc_score(y_true=y_test, y_score=y_pred)
+    print(f'AUROC: {auroc:.2f}')
 
     # ...
 

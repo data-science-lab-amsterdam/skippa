@@ -1,0 +1,7 @@
+Sphinx
+sphinx-autodoc-typehints
+sphinx-rtd-theme
+recommonmark
+pandas>=1.0.0
+scikit-learn>=1.0.0
+dill>=0.3.4

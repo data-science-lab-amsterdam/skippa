@@ -1,31 +1,30 @@
 """
-import numpy as np
-import pandas as pd
-import dill
+Defining a Skippa pipeline
 
-from skippa import Skippa, columns
+>>> import pandas as pd
+>>> from skippa import Skippa, columns
+>>> from sklearn.linear_model import LogisticRegression
 
 
-df = pd.DataFrame({
-    'q': [2, 3, 4],
-    'x': ['a', 'b', 'c'],
-    'y': [1, 16, 1000],
-    'z': [0.4, None, 8.7]
-})
-y = np.array([0, 0, 1])
+>>> X = pd.DataFrame({
+>>>     'q': [2, 3, 4],
+>>>     'x': ['a', 'b', 'c'],
+>>>     'y': [1, 16, 1000],
+>>>     'z': [0.4, None, 8.7]
+>>> })
+>>> y = np.array([0, 0, 1])
 
-pipe = (
-    Skippa()
-        .impute(columns(dtype_include='number'), strategy='median')
-        .scale(columns(dtype_include='number'), type='standard')
-        .onehot(columns(['x']))
-        .rename(columns(pattern='x_*'), lambda c: c.replace('x', 'cat'))
-        .select(columns(['y', 'z']) + columns(pattern='cat_*'))
-        .build(verbose=True)
-)
+>>> pipe = (
+>>>     Skippa()
+>>>         .impute(columns(dtype_include='number'), strategy='median')
+>>>         .scale(columns(dtype_include='number'), type='standard')
+>>>         .onehot(columns(['x']))
+>>>         .select(columns(['y', 'z']) + columns(pattern='x_*'))
+>>>         .model(LogisticRegression())
+>>> )
 
-model = pipe.fit(X=df, y=y)
-res = model.transform(df)
+>>> pipe.fit(X=X, y=y)
+>>> predictions = pipe.predict_proba(X)
 
 """
 from __future__ import annotations
@@ -293,7 +292,7 @@ class Skippa:
     def assign(self, **kwargs) -> Skippa:
         """Create new columns based on data in existing columns
 
-        This is a werapper around pandas' .assign method and uses the same syntax.
+        This is a wrapper around pandas' .assign method and uses the same syntax.
 
         Arguments:
             **kwargs: keyword args denoting new_column=assignment_function pairs
@@ -307,7 +306,7 @@ class Skippa:
     def apply(self, *args, **kwargs) -> Skippa:
         """Apply a function to the dataframe.
 
-        This is a werapper around pandas' .apply method and uses the same syntax.
+        This is a wrapper around pandas' .apply method and uses the same syntax.
 
         Arguments:
             *args: first arg should be the funciton to apply

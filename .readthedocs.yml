@@ -6,13 +6,13 @@ sphinx:
 formats: all
 
 python:
-  version: 3.8
+  version: "3.8"
   install:
+    - requirements: requirements_docs.txt
     - method: pip
       path: .
       extra_requirements:
         - all
-    - requirements: requirements_docs.txt
 
 submodules:
   include: all

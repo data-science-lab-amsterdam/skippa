@@ -20,6 +20,11 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('..'))
+import mock
+
+MOCK_MODULES = ['pandas', 'scikit-learn', 'dill']
+for mod_name in MOCK_MODULES:
+    sys.modules[mod_name] = mock.Mock()
 
 import skippa
 
@@ -57,7 +62,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'skippa'
-copyright = "2021, Robert van Straalen"
+copyright = "2021, Data Science Lab B.V."
 author = "Robert van Straalen"
 
 # The version info for the project you're documenting, acts as replacement

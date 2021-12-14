@@ -5,3 +5,4 @@ recommonmark
 pandas>=1.0.0
 scikit-learn>=1.0.0
 dill>=0.3.4
+mock

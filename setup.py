@@ -4,7 +4,8 @@
 
 from setuptools import setup, find_packages
 
-from skippa import __version__
+
+VERSION = '0.1.6'
 
 
 with open('README.md') as readme_file:
@@ -45,6 +46,9 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/data-science-lab-amsterdam/skippa',
-    version=__version__,
+    project_urls={
+        'Documentation': 'https://skippa.readthedocs.io/'
+    },
+    version=VERSION,
     zip_safe=False,
 )

@@ -15,19 +15,30 @@ from skippa.transformers import ColumnSelector, SkippaMixin
 class SkippaApplier(BaseEstimator, TransformerMixin, SkippaMixin):
     """Transformer for applying arbitrary function (wraps around pandas apply)"""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, cols: ColumnSelector, *args, **kwargs):
+        """Initialise with columns specifier and apply parameters
+
+        Args:
+            cols (ColumnSelector): columns specifier
+            *args, **kwargs: any arguments accepted by pandas.DataFrame.apply()
+        """
+        self.cols = cols
         self.args = args
         self.kwargs = kwargs
 
     def fit(self, X, y=None, **fit_params):
+        """Nothing to do here"""
         return self
 
     def transform(self, X, y=None, **transform_params):
         """Use pandas.DataFrame.apply method"""
-        result = X.apply(*self.args, **self.kwargs)
-        if not isinstance(result, pd.DataFrame):
+        column_names = self._evaluate_columns(X)
+        data_new = X[column_names].apply(*self.args, **self.kwargs)
+        if not isinstance(data_new, pd.DataFrame):
             raise TypeError('Applied function should return a pandas dataframe!')
-        return result
+        df_new = X.drop(column_names, axis=1)
+        df_new.loc[:, column_names] = data_new
+        return df_new
 
 
 class SkippaCaster(BaseEstimator, TransformerMixin, SkippaMixin):
@@ -75,7 +86,7 @@ class SkippaRenamer(BaseEstimator, TransformerMixin):
         """Look at the df to determine the mapping.
         
         In case of a columnselector + function: 
-        evaluate the column names and aplpy the renaming function
+        evaluate the column names and apply the renaming function
         """
         if isinstance(self.mapping, tuple):
             column_selector, renamer = self.mapping

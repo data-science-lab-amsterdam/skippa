@@ -12,7 +12,7 @@ build:
 
 python:
   install:
-    - requirements: requirements_docs.txt
+    - requirements: docs/requirements_docs.txt
     - method: pip
       path: .
       extra_requirements:

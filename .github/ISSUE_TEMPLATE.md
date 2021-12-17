@@ -1,4 +1,4 @@
-* preprocessing version:
+* Skippa version:
 * Python version:
 * Operating System:
 

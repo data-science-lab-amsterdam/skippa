@@ -1,17 +1,21 @@
 ![pypi](https://img.shields.io/pypi/v/skippa)
-![](https://img.shields.io/pypi/pyversions/skippa)
+![python versions](https://img.shields.io/pypi/pyversions/skippa)
+![downloads](https://img.shields.io/pypi/dm/skippa)
 
 
 # Skippa 
-:kangaroo: easy hopping
 
-SciKIt-learn Pipeline in PAndas
+SciKIt-learn Pre-processing Pipeline in PAndas
+
+> __*Read more in the [introduction blog on towardsdatascience](https://towardsdatascience.com/introducing-skippa-bab260acf6a7)*__
+
 
 Want to create a machine learning model using pandas & scikit-learn? This should make your life easier.
 
 Skippa helps you to easily create a pre-processing and modeling pipeline, based on scikit-learn transformers but preserving pandas dataframe format throughout all pre-processing. This makes it a lot easier to define a series of subsequent transformation steps, while referring to columns in your intermediate dataframe.
 
 So basically the same idea as `scikit-pandas`, but a different (and hopefully better) way to achieve it.
+
 
 ## Installation
 ```
@@ -93,6 +97,7 @@ See [./examples](./examples) for more examples.
 - [ ] Validation of pipeline steps
 - [ ] Input validation in transformers
 - [ ] Check how GridSearch (or other param search) works with Skippa
+- [ ] OneHotEncoder: limit to maximum nr. of different values (n most frequent ones)
 - [ ] Transformer for replacing values (pandas .replace)
 - [ ] Support arbitrary transformer (if column-preserving)
 - [ ] Eliminate the need to call columns explicitly
@@ -100,5 +105,5 @@ See [./examples](./examples) for more examples.
 
 
 ## Credits
-
-This package was created with [Cookiecutter](https://github.com/audreyr/cookiecutter) and the [`audreyr/cookiecutter-pypackage`](https://github.com/audreyr/cookiecutter-pypackage) project template.
+- Skippa is powered by [Data Science Lab Amsterdam](https://www.datasciencelab.nl)
+- This project structure is based on the [`audreyr/cookiecutter-pypackage`](https://github.com/audreyr/cookiecutter-pypackage) project template.

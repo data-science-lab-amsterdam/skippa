@@ -4,8 +4,7 @@
 
 from setuptools import setup, find_packages
 
-
-VERSION = '0.1.6'
+from _version import VERSION
 
 
 with open('README.md') as readme_file:

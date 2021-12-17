@@ -1,7 +1,8 @@
 # History
 
-## 0.1.5 (2021-12-13)
-- Fixes for readthedocs
+## 0.1.6 (2021-12-17)
+- Docs, setup, readme updates
+- Updated `.apply()` method so that is accepts a columns specifier
 
 ## 0.1.5 (2021-12-13)
 - Fixes for readthedocs

@@ -67,11 +67,6 @@ class SkippaSimpleImputer(SkippaMixin, SimpleImputer):
         df.loc[:, column_names] = res
         return df
 
-    # @classmethod
-    # def _get_param_names(cls):
-    #     """Get parameter names for the estimator"""
-    #     return sorted(['cols', 'strategy'])
-
 
 class SkippaStandardScaler(SkippaMixin, StandardScaler):
     """Wrapper round sklearn's StandardScaler"""
@@ -133,8 +128,3 @@ class SkippaOneHotEncoder(SkippaMixin, OneHotEncoder):
         assert len(new_column_names) == data_new.shape[1], "Nr. of expected vs. actual columns doesn't match"
         df_new.loc[:, new_column_names] = data_new
         return df_new
-
-    # @classmethod
-    # def _get_param_names(cls):
-    #     """Get parameter names for the estimator"""
-    #     return sorted(['cols', 'sparse'])

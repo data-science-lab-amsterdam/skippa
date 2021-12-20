@@ -10,7 +10,7 @@ trigger:
   paths:
     # only trigger if version number has changed
     include:
-    - skippa/__init__.py
+    - _version.py
 
 stages:
 - stage: Build_Test

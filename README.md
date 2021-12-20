@@ -92,11 +92,12 @@ See [./examples](./examples) for more examples.
 - [x] Support pandas assign for creating new columns based on existing columns
 - [x] Support cast / astype transformer
 - [x] Support for .apply transformer: wrapper around `pandas.DataFrame.apply`
+- [x] Check how GridSearch (or other param search) works with Skippa
+- [ ] Facilitate random seed in Skippa object that is dispatched to all downstream operations
 - [ ] fit-transform does lazy evaluation > cast to category and then selecting category columns doesn't work > each fit/transform should work on the expected output state of the previous transformer, rather than on the original dataframe
 - [ ] Investigate if Skippa can directly extend sklearn's Pipeline
 - [ ] Validation of pipeline steps
 - [ ] Input validation in transformers
-- [ ] Check how GridSearch (or other param search) works with Skippa
 - [ ] OneHotEncoder: limit to maximum nr. of different values (n most frequent ones)
 - [ ] Transformer for replacing values (pandas .replace)
 - [ ] Support arbitrary transformer (if column-preserving)

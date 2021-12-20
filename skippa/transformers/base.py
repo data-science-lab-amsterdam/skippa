@@ -6,6 +6,7 @@ from __future__ import annotations
 from typing import Optional, Union, List, Dict, Tuple, Callable
 import re
 import logging
+import inspect
 
 import numpy as np
 import pandas as pd
@@ -118,10 +119,53 @@ def columns(
 class SkippaMixin:
     """Utility class providing additional methods for custom Skippa transformers."""
     
+    def _get_param_names(self) -> List[str]:
+        """Get parameter names for the estimator.
+        
+        This overrides sklearn's BaseEstimator._get_param_names()
+        These things are changed:
+        - the first line doesn't look at cls.__init__, but super().__init__
+        - it's no longer a class method but an instance method, because the super().__init__ depends on which class was instantiated
+        - we manually add the 'cols' parameter, because it's always added to the skippa extension
+
+        This is a fix for a problem using GridSearchCV (or any other sklearn hyperparam search)
+        - When calling .fit on the search, it calls .get_params() for each pipeline step
+        - this in turn calls the BaseEstimator._get_param_names() class method
+        - since our steps are not the sklearn transformers, but Skippa extensions, they have a different init signature
+        - this fix makes sure we look at the param signature of the sklearn class (and we mamnually add the 'cols' parameter)
+        """
+        # fetch the constructor or the original constructor before
+        # deprecation wrapping if any
+        init = getattr(super().__init__, "deprecated_original", super().__init__)
+        if init is object.__init__:
+            # No explicit constructor to introspect
+            return []
+
+        # introspect the constructor arguments to find the model parameters
+        # to represent
+        init_signature = inspect.signature(init)
+        # Consider the constructor parameters excluding 'self'
+        parameters = [
+            p
+            for p in init_signature.parameters.values()
+            if p.name != "self" and p.kind != p.VAR_KEYWORD
+        ]
+        for p in parameters:
+            if p.kind == p.VAR_POSITIONAL:
+                raise RuntimeError(
+                    "scikit-learn estimators should always "
+                    "specify their parameters in the signature"
+                    " of their __init__ (no varargs)."
+                    " %s with constructor %s doesn't "
+                    " follow this convention." % (self, init_signature)
+                )
+        # Extract and sort argument names excluding 'self']
+        return sorted([p.name for p in parameters] + ['cols'])
+    
     def _set_columns(self, cols: ColumnSelector) -> None:
         self.cols = cols
 
-    def _evaluate_columns(self, X):
+    def _evaluate_columns(self, X) -> List[str]:
         self._column_names = self.cols(X)
         if len(self._column_names) == 0:
             logging.warn(f'No columns found for column selector {self.cols}')
@@ -132,7 +176,7 @@ class SkippaMixin:
         X.loc[:, column_names] = res
         return X
 
-    def _set_names(self, X):
+    def _set_names(self, X) -> None:
         self.names = X.columns
 
     def _get_names(self):

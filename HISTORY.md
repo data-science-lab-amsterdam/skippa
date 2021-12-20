@@ -1,5 +1,9 @@
 # History
 
+## 0.1.7 (2021-12-20)
+- Fixed issue that GridSearchCV (or hyperparam in general) did not work on Skippa pipeline
+- Example added using GridSearch
+
 ## 0.1.6 (2021-12-17)
 - Docs, setup, readme updates
 - Updated `.apply()` method so that is accepts a columns specifier

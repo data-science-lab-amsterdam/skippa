@@ -48,7 +48,7 @@ def make_skippa_column_transformer(
     )
 
 
-class SkippaSimpleImputer(SimpleImputer, SkippaMixin):
+class SkippaSimpleImputer(SkippaMixin, SimpleImputer):
     """Wrapper round sklearn's SimpleImputer"""
 
     def __init__(self, cols: ColumnSelector, **kwargs) -> None:
@@ -67,8 +67,13 @@ class SkippaSimpleImputer(SimpleImputer, SkippaMixin):
         df.loc[:, column_names] = res
         return df
 
+    # @classmethod
+    # def _get_param_names(cls):
+    #     """Get parameter names for the estimator"""
+    #     return sorted(['cols', 'strategy'])
 
-class SkippaStandardScaler(StandardScaler, SkippaMixin):
+
+class SkippaStandardScaler(SkippaMixin, StandardScaler):
     """Wrapper round sklearn's StandardScaler"""
 
     def __init__(self, cols: ColumnSelector, **kwargs) -> None:
@@ -88,7 +93,7 @@ class SkippaStandardScaler(StandardScaler, SkippaMixin):
         return df
 
 
-class SkippaMinMaxScaler(MinMaxScaler, SkippaMixin):
+class SkippaMinMaxScaler(SkippaMixin, MinMaxScaler):
     """Wrapper round sklearn's MinMaxScaler"""
 
     def __init__(self, cols: ColumnSelector, **kwargs) -> None:
@@ -108,7 +113,7 @@ class SkippaMinMaxScaler(MinMaxScaler, SkippaMixin):
         return df
 
 
-class SkippaOneHotEncoder(OneHotEncoder, SkippaMixin):
+class SkippaOneHotEncoder(SkippaMixin, OneHotEncoder):
     """Wrapper round sklearn's OneHotEncoder"""
 
     def __init__(self, cols: ColumnSelector, **kwargs) -> None:
@@ -125,5 +130,11 @@ class SkippaOneHotEncoder(OneHotEncoder, SkippaMixin):
         data_new = super().transform(X[column_names], **kwargs)
         df_new = X.drop(column_names, axis=1)
         new_column_names = self.get_feature_names_out()
+        assert len(new_column_names) == data_new.shape[1], "Nr. of expected vs. actual columns doesn't match"
         df_new.loc[:, new_column_names] = data_new
         return df_new
+
+    # @classmethod
+    # def _get_param_names(cls):
+    #     """Get parameter names for the estimator"""
+    #     return sorted(['cols', 'sparse'])

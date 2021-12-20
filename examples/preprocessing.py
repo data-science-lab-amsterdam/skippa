@@ -1,6 +1,8 @@
 """
-Test data preprocessing
-Result of the pipeline is not a fitted model, but a transformed dataframe
+Test data preprocessing only
+In thisd case, the result of the pipeline is not a fitted model, but a transformed dataframe
+
+N.B. You can also use this approach to inspect the contents of the dataframe after your pre-processing
 """
 import numpy as np
 import pandas as pd
@@ -17,7 +19,6 @@ def main():
         'y': [1, 16, 1000],
         'z': [0.4, None, 8.7]
     })
-    
     print(df.info())
 
     # define the pipeline

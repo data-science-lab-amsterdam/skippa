@@ -3,22 +3,22 @@ import pytest
 from skippa import columns
 
 
-def test_columns_unnamedarg(test_data):
-    names = columns(['x'])(test_data)
+def test_columns_unnamedarg(test_df):
+    names = columns(['x'])(test_df)
     assert names == ['x']
 
 
-def test_columns_columnselectorarg(test_data):
+def test_columns_columnselectorarg(test_df):
     selector = columns(['x'])
-    names = columns(selector)(test_data)
+    names = columns(selector)(test_df)
     assert names == ['x']
 
-def test_columns_include(test_data):
+def test_columns_include(test_df):
     selector = columns(include=['x', 'y'])
-    names = selector(test_data)
+    names = selector(test_df)
     assert names == ['x', 'y']
 
-def test_columns_exclude(test_data):
+def test_columns_exclude(test_df):
     selector = columns(exclude=['x', 'y'])
-    names = selector(test_data)
+    names = selector(test_df)
     assert set(names) & set(['x', 'y']) == set()

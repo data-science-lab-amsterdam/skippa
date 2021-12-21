@@ -1,6 +1,8 @@
 ![pypi](https://img.shields.io/pypi/v/skippa)
 ![python versions](https://img.shields.io/pypi/pyversions/skippa)
 ![downloads](https://img.shields.io/pypi/dm/skippa)
+![Build status](https://img.shields.io/azure-devops/build/data-science-lab/Intern/263)
+![Code coverage](https://img.shields.io/azure-devops/coverage/data-science-lab/Intern/263)
 
 
 # Skippa 

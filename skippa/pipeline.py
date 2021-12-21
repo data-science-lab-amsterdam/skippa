@@ -49,6 +49,8 @@ from skippa.transformers.sklearn import (
     SkippaStandardScaler,
     SkippaMinMaxScaler,
     SkippaOneHotEncoder,
+    SkippaLabelEncoder,
+    SkippaOrdinalEncoder,
     make_skippa_column_transformer
 )
 from skippa.transformers.custom import (
@@ -242,7 +244,8 @@ class Skippa:
         """Skippa wrapper around sklearn's OneHotEncoder
 
         Args:
-            cols (ColumnSelector): [description]
+            cols (ColumnSelector): columns specification
+            **kwargs: optional kwargs for OneHotEncoder (although 'sparse' will always be set to False)
 
         Returns:
             Skippa: just return itself again (so we can use piping)
@@ -250,8 +253,33 @@ class Skippa:
         if cols is None:
             cols = columns(dtype_include='category')
 
-        kwargs['sparse'] = False
         self._step('onehot', SkippaOneHotEncoder(cols=cols, **kwargs))
+        return self
+
+    def label_encode(self, cols: ColumnSelector, **kwargs) -> Skippa:
+        """Wrapper around sklearn's LabelEncoder
+
+        Args:
+            cols (ColumnSelector): columns specification
+            **kwargs: optional kwargs for LabelEncoder
+
+        Returns:
+            Skippa: just return itself again (so we can use piping)
+        """
+        self._step('label_encode', SkippaLabelEncoder(cols=cols, **kwargs))
+        return self
+    
+    def ordinal_encode(self, cols: ColumnSelector, **kwargs) -> Skippa:
+        """Wrapper around sklearn's OrdinalEncoder
+
+        Args:
+            cols (ColumnSelector): columns specification
+            **kwargs: optional kwargs for OrdinalEncoder
+
+        Returns:
+            Skippa: just return itself again (so we can use piping)
+        """
+        self._step('label_encode', SkippaOrdinalEncoder(cols=cols, **kwargs))
         return self
 
     def rename(self, *args, **kwargs) -> Skippa:

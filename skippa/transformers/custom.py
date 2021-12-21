@@ -182,7 +182,7 @@ class SkippaDateEncoder(BaseEstimator, TransformerMixin, SkippaMixin):
         return self
 
     def transform(self, X, y=None, **kwargs):
-        column_names = self._evaluate_columns(X)
+        column_names = self._evaluate_columns(X, check_dtypes='string')
         df = X.copy()
         for c in column_names:
             dt = X[c].apply(pd.to_datetime).dt

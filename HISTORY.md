@@ -1,5 +1,9 @@
 # History
 
+## 0.1.8 (2021-12-23)
+- Removed print statement in SkippaSimpleImputer
+- Added unit tests
+
 ## 0.1.7 (2021-12-20)
 - Fixed issue that GridSearchCV (or hyperparam in general) did not work on Skippa pipeline
 - Example added using GridSearch

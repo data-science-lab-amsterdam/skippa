@@ -104,6 +104,7 @@ See [./examples](./examples) for more examples.
 - [ ] Transformer for replacing values (pandas .replace)
 - [ ] Support arbitrary transformer (if column-preserving)
 - [ ] Eliminate the need to call columns explicitly
+- [ ] Add a method to inspect a fitted pipeline/model by creating a Gradio app defining raw features input and model output
 - [ ] Add more transformations
 
 

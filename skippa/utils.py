@@ -34,7 +34,7 @@ def get_dummy_data(
     # float columns
     idx_start_float = idx
     if nfloat > 0:
-        data[columns[idx:idx+nfloat]] = np.random.random((nrows, nfloat)) * np.array([-1, 1, 10, 100])
+        data[columns[idx:idx+nfloat]] = np.random.random((nrows, nfloat)) * np.arange(1, nfloat+1)
         idx += nfloat
 
     # int columns

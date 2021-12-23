@@ -77,7 +77,6 @@ class SkippaSimpleImputer(SkippaMixin, SimpleImputer):
     def transform(self, X, y=None, **kwargs):
         column_names = self._evaluate_columns(X, check_dtypes=self._dtype_required)
         res = super().transform(X[column_names], **kwargs)
-        print(res)
         df = X.copy()
         df.loc[:, column_names] = res
         return df

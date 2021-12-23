@@ -7,7 +7,14 @@ import logging
 import numpy as np
 import pandas as pd
 from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import StandardScaler, MinMaxScaler, OneHotEncoder, FunctionTransformer
+from sklearn.preprocessing import (
+    StandardScaler,
+    MinMaxScaler,
+    OneHotEncoder,
+    OrdinalEncoder,
+    LabelEncoder,
+    FunctionTransformer
+)
 from sklearn.compose import ColumnTransformer
 
 from skippa.transformers import ColumnSelector, SkippaMixin
@@ -53,24 +60,26 @@ class SkippaSimpleImputer(SkippaMixin, SimpleImputer):
 
     def __init__(self, cols: ColumnSelector, **kwargs) -> None:
         self._set_columns(cols)
+        if kwargs.get('strategy', 'mean') == 'most_frequent':
+            self._dtype_required = 'string'
+            kwargs['missing_values'] = None
+        else:
+            self._dtype_required = 'numeric'
+            kwargs['missing_values'] = np.nan
+
         super().__init__(**kwargs)
 
     def fit(self, X, y=None, **kwargs):
-        column_names = self._evaluate_columns(X)
+        column_names = self._evaluate_columns(X, check_dtypes=self._dtype_required)
         super().fit(X[column_names], **kwargs)
         return self
 
     def transform(self, X, y=None, **kwargs):
-        column_names = self._evaluate_columns(X)
+        column_names = self._evaluate_columns(X, check_dtypes=self._dtype_required)
         res = super().transform(X[column_names], **kwargs)
         df = X.copy()
         df.loc[:, column_names] = res
         return df
-
-    # @classmethod
-    # def _get_param_names(cls):
-    #     """Get parameter names for the estimator"""
-    #     return sorted(['cols', 'strategy'])
 
 
 class SkippaStandardScaler(SkippaMixin, StandardScaler):
@@ -81,12 +90,12 @@ class SkippaStandardScaler(SkippaMixin, StandardScaler):
         super().__init__(**kwargs)
 
     def fit(self, X, y=None, **kwargs):
-        column_names = self._evaluate_columns(X)
+        column_names = self._evaluate_columns(X, check_dtypes='numeric')
         super().fit(X[column_names], **kwargs)
         return self
 
     def transform(self, X, y=None, **kwargs):
-        column_names = self._evaluate_columns(X)
+        column_names = self._evaluate_columns(X, check_dtypes='numeric')
         res = super().transform(X[column_names], **kwargs)
         df = X.copy()
         df.loc[:, column_names] = res
@@ -101,12 +110,12 @@ class SkippaMinMaxScaler(SkippaMixin, MinMaxScaler):
         super().__init__(**kwargs)
 
     def fit(self, X, y=None, **kwargs):
-        column_names = self._evaluate_columns(X)
+        column_names = self._evaluate_columns(X, check_dtypes='numeric')
         super().fit(X[column_names], **kwargs)
         return self
 
     def transform(self, X, y=None, **kwargs):
-        column_names = self._evaluate_columns(X)
+        column_names = self._evaluate_columns(X, check_dtypes='numeric')
         res = super().transform(X[column_names], **kwargs)
         df = X.copy()
         df.loc[:, column_names] = res
@@ -118,6 +127,7 @@ class SkippaOneHotEncoder(SkippaMixin, OneHotEncoder):
 
     def __init__(self, cols: ColumnSelector, **kwargs) -> None:
         self._set_columns(cols)
+        kwargs['sparse'] = False  # never output a sparse matrix
         super().__init__(**kwargs)
 
     def fit(self, X, y=None, **kwargs):
@@ -134,7 +144,42 @@ class SkippaOneHotEncoder(SkippaMixin, OneHotEncoder):
         df_new.loc[:, new_column_names] = data_new
         return df_new
 
-    # @classmethod
-    # def _get_param_names(cls):
-    #     """Get parameter names for the estimator"""
-    #     return sorted(['cols', 'sparse'])
+
+class SkippaOrdinalEncoder(SkippaMixin, OrdinalEncoder):
+    """Wrapper round sklearn's OrdinalEncoder"""
+
+    def __init__(self, cols: ColumnSelector, **kwargs) -> None:
+        self._set_columns(cols)
+        super().__init__(**kwargs)
+
+    def fit(self, X, y=None, **kwargs):
+        column_names = self._evaluate_columns(X)
+        super().fit(X[column_names], **kwargs)
+        return self
+
+    def transform(self, X, y=None, **kwargs):
+        column_names = self._evaluate_columns(X)
+        encoded = super().transform(X[column_names], **kwargs)
+        df = X.copy()
+        df.loc[:, column_names] = encoded
+        return df
+
+
+class SkippaLabelEncoder(SkippaMixin, LabelEncoder):
+    """Wrapper round sklearn's LabelEncoder"""
+
+    def __init__(self, cols: ColumnSelector, **kwargs) -> None:
+        self._set_columns(cols)
+        super().__init__(**kwargs)
+
+    def fit(self, X, y=None, **kwargs):
+        column_names = self._evaluate_columns(X)
+        super().fit(X[column_names], **kwargs)
+        return self
+
+    def transform(self, X, y=None, **kwargs):
+        column_names = self._evaluate_columns(X)
+        encoded = super().transform(X[column_names], **kwargs)
+        df = X.copy()
+        df.loc[:, column_names] = encoded
+        return df

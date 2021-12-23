@@ -10,6 +10,7 @@ import inspect
 
 import numpy as np
 import pandas as pd
+from pandas.api.types import is_numeric_dtype, is_string_dtype, is_float_dtype
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.compose import make_column_selector, make_column_transformer
 
@@ -165,10 +166,33 @@ class SkippaMixin:
     def _set_columns(self, cols: ColumnSelector) -> None:
         self.cols = cols
 
-    def _evaluate_columns(self, X) -> List[str]:
+    def _evaluate_columns(self, X: pd.DataFrame, check_dtypes: str = None) -> List[str]:
+        """Evaluate columns expression on given dataframe
+
+        Args:
+            X (pd.DataFrame): [description]
+            check_dtypes (str, optional): When filled, check if the datatypes are as expected. Defaults to None.
+
+        Raises:
+            TypeError: if dtypes ofund in the columns are not as expected by the transformation
+
+        Returns:
+            List[str]: A list of column names
+        """
         self._column_names = self.cols(X)
         if len(self._column_names) == 0:
             logging.warn(f'No columns found for column selector {self.cols}')
+        
+        if check_dtypes == 'numeric':
+            if not all([is_numeric_dtype(t) for t in X[self._column_names].dtypes]):
+                raise TypeError('Transformation can only be applied to numeric columns')
+        elif check_dtypes == 'float':
+            if not all([is_float_dtype(t) for t in X[self._column_names].dtypes]):
+                raise TypeError('Transformation can only be applied to numeric columns')
+        elif check_dtypes == 'string':
+            if not all([is_string_dtype(t) for t in X[self._column_names].dtypes]):
+                raise TypeError('Transformation can only be applied to numeric columns')
+        
         return self._column_names
 
     def _get_result(self, X, res) -> pd.DataFrame:

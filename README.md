@@ -1,6 +1,8 @@
 ![pypi](https://img.shields.io/pypi/v/skippa)
 ![python versions](https://img.shields.io/pypi/pyversions/skippa)
 ![downloads](https://img.shields.io/pypi/dm/skippa)
+![Build status](https://img.shields.io/azure-devops/build/data-science-lab/Intern/263)
+![Code coverage](https://img.shields.io/azure-devops/coverage/data-science-lab/Intern/263)
 
 
 # Skippa 
@@ -102,6 +104,7 @@ See [./examples](./examples) for more examples.
 - [ ] Transformer for replacing values (pandas .replace)
 - [ ] Support arbitrary transformer (if column-preserving)
 - [ ] Eliminate the need to call columns explicitly
+- [ ] Add a method to inspect a fitted pipeline/model by creating a Gradio app defining raw features input and model output
 - [ ] Add more transformations
 
 

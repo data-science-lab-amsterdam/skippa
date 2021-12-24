@@ -37,7 +37,10 @@ import pandas as pd
 from sklearn.base import BaseEstimator
 from sklearn.pipeline import Pipeline
 from sklearn.base import RegressorMixin, ClassifierMixin, ClusterMixin
+from sklearn.exceptions import NotFittedError
 
+from skippa.app import GradioApp
+from skippa.profile import DataProfile
 from skippa.transformers import (
     Transformation,
     ColumnExpression,
@@ -69,12 +72,55 @@ PathType = Union[Path, str]
 
 class SkippaPipeline(Pipeline):
 
+    def __init__(self, steps, *, memory=None, verbose=False):
+        self._is_fitted = False
+        self._profile = None
+        super().__init__(steps, memory=memory, verbose=verbose)
+
     def save(self, file_path: PathType) -> None:
         with open(Path(file_path).as_posix(), 'wb') as f:
             f.write(dill.dumps(self))
 
     def get_model(self):
         return self.steps[-1][1]
+    
+    def _create_data_profile(self, X, y) -> None:
+        assert isinstance(X, pd.DataFrame), f"A Skippa Pipeline can only be fitted on a pandas DataFrame, not a {type(X)}"
+        self._profile = DataProfile(X, y)
+    
+    def get_data_profile(self) -> DataProfile:
+        """The DataProfile is used in the Gradio app.
+
+        The profile contains information on column names, their dtypes and value ranges.
+
+        Raises:
+            NotFittedError: If pipeline has not been fitted there is no data profile yet.
+
+        Returns:
+            DataProfile: Simple object containing necessary info
+        """
+        if not self._is_fitted:
+            raise NotFittedError('The Pipeline needs to be fitted on data, before a data profile is available.')
+        assert isinstance(self._profile, DataProfile)
+        return self._profile
+    
+    def fit(self, X, y=None, **kwargs):
+        """Inspect input data before fitting the pipeline."""
+        self._create_data_profile(X, y)
+        super().fit(X, y, **kwargs)
+        self._is_fitted = True
+        return self
+    
+    def create_gradio_app(self, **kwargs):
+        """Create a Gradio app for model inspection.
+
+        Arguments:
+            **kwargs: kwargs received by Gradio's `Interface()` initialisation
+
+        Returns:
+            gr.Interface: Gradio Interface object -> call .launch to start the app
+        """
+        return GradioApp(self).build(**kwargs)
 
 
 class Skippa:
@@ -349,9 +395,9 @@ class Skippa:
     def model(self, model: BaseEstimator) -> SkippaPipeline:
         """Add a model estimator.
 
-        A model estimator is always the last step in the pipeline.
+        A model estimator is always the last step in the pipeline!
         Therefore this doesn't return the Skippa object (self)
-        but calls the .build method to return the pipeline
+        but calls the .build method to return the pipeline.
 
         Args:
             model (BaseEstimator): An sklearn estimator

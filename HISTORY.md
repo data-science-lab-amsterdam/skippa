@@ -1,5 +1,9 @@
 # History
 
+## 0.1.9 (2021-12-24)
+- Added support for automatic creation of Gradio app for model inspection
+- Added example with Gradio app
+
 ## 0.1.8 (2021-12-23)
 - Removed print statement in SkippaSimpleImputer
 - Added unit tests

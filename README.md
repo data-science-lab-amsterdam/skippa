@@ -88,13 +88,19 @@ my_pipeline = Skippa.load_pipeline('./models/my_skippa_model_pipeline.dill')
 predictions = my_pipeline.predict(df_new_data)
 ```
 
-See [./examples](./examples) for more examples.
+See the [./examples](./examples) directory for more examples:
+- [01-standard-pipeline.py](./examples/01-standard-pipeline.py)
+- [02-preprocessing-only.py](./examples/02-preprocessing-only.py)
+- [03-gridsearch.py](./examples/03-gridsearch.py)
+- [04-gradio-app.py](./examples/04-gradio-app.py)
 
 ## To Do
 - [x] Support pandas assign for creating new columns based on existing columns
 - [x] Support cast / astype transformer
 - [x] Support for .apply transformer: wrapper around `pandas.DataFrame.apply`
 - [x] Check how GridSearch (or other param search) works with Skippa
+- [x] Add a method to inspect a fitted pipeline/model by creating a Gradio app defining raw features input and model output
+- Support PCA transformer
 - [ ] Facilitate random seed in Skippa object that is dispatched to all downstream operations
 - [ ] fit-transform does lazy evaluation > cast to category and then selecting category columns doesn't work > each fit/transform should work on the expected output state of the previous transformer, rather than on the original dataframe
 - [ ] Investigate if Skippa can directly extend sklearn's Pipeline
@@ -104,7 +110,6 @@ See [./examples](./examples) for more examples.
 - [ ] Transformer for replacing values (pandas .replace)
 - [ ] Support arbitrary transformer (if column-preserving)
 - [ ] Eliminate the need to call columns explicitly
-- [ ] Add a method to inspect a fitted pipeline/model by creating a Gradio app defining raw features input and model output
 - [ ] Add more transformations
 
 

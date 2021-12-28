@@ -12,12 +12,15 @@ SciKIt-learn Pre-processing Pipeline in PAndas
 > __*Read more in the [introduction blog on towardsdatascience](https://towardsdatascience.com/introducing-skippa-bab260acf6a7)*__
 
 
+
 Want to create a machine learning model using pandas & scikit-learn? This should make your life easier.
 
 Skippa helps you to easily create a pre-processing and modeling pipeline, based on scikit-learn transformers but preserving pandas dataframe format throughout all pre-processing. This makes it a lot easier to define a series of subsequent transformation steps, while referring to columns in your intermediate dataframe.
 
 So basically the same idea as `scikit-pandas`, but a different (and hopefully better) way to achieve it.
 
+- [pypi](https://pypi.org/project/skippa/)
+- [Documentation](https://skippa.readthedocs.io/)
 
 ## Installation
 ```
@@ -93,6 +96,7 @@ See the [./examples](./examples) directory for more examples:
 - [02-preprocessing-only.py](./examples/02-preprocessing-only.py)
 - [03-gridsearch.py](./examples/03-gridsearch.py)
 - [04-gradio-app.py](./examples/04-gradio-app.py)
+- [05-PCA.py](./examples/05-PCA.py)
 
 ## To Do
 - [x] Support pandas assign for creating new columns based on existing columns
@@ -100,7 +104,7 @@ See the [./examples](./examples) directory for more examples:
 - [x] Support for .apply transformer: wrapper around `pandas.DataFrame.apply`
 - [x] Check how GridSearch (or other param search) works with Skippa
 - [x] Add a method to inspect a fitted pipeline/model by creating a Gradio app defining raw features input and model output
-- Support PCA transformer
+- [x] Support PCA transformer
 - [ ] Facilitate random seed in Skippa object that is dispatched to all downstream operations
 - [ ] fit-transform does lazy evaluation > cast to category and then selecting category columns doesn't work > each fit/transform should work on the expected output state of the previous transformer, rather than on the original dataframe
 - [ ] Investigate if Skippa can directly extend sklearn's Pipeline
@@ -110,7 +114,6 @@ See the [./examples](./examples) directory for more examples:
 - [ ] Transformer for replacing values (pandas .replace)
 - [ ] Support arbitrary transformer (if column-preserving)
 - [ ] Eliminate the need to call columns explicitly
-- [ ] Add more transformations
 
 
 ## Credits

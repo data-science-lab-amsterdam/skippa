@@ -1,5 +1,10 @@
 # History
 
+## 0.1.10 (2021-12-28)
+- Added support for PCA (including example)
+- Gradio app support extended to regression
+- Minor cleanup and improvements
+
 ## 0.1.9 (2021-12-24)
 - Added support for automatic creation of Gradio app for model inspection
 - Added example with Gradio app

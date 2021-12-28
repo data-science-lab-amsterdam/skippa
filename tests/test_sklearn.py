@@ -9,7 +9,8 @@ from skippa.transformers.sklearn import(
     SkippaMinMaxScaler,
     SkippaOneHotEncoder,
     SkippaLabelEncoder,
-    SkippaOrdinalEncoder
+    SkippaOrdinalEncoder,
+    SkippaPCA
 )
 from skippa.utils import get_dummy_data
 
@@ -68,3 +69,15 @@ def test_onehotencoder():
     res = ohe.fit_transform(X)
     n_distinct_values = X.iloc[:, 0].nunique(dropna=False)
     assert res.shape[1] == n_distinct_values
+
+
+def test_pca():
+    n_components = 3
+    X, _ = get_dummy_data(nrows=100, nfloat=10, nint=0, nchar=1, ndate=0, missing=False)
+    pca = SkippaPCA(cols=columns(dtype_include='float'), n_components=n_components)
+    res = pca.fit_transform(X)
+    assert pca.n_components_ == n_components
+    assert res.shape[1] == n_components + 1
+    expected_columns = [f'c{i}' for i in range(n_components)]
+    assert all([c in res.columns for c in expected_columns])
+

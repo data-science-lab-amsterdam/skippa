@@ -183,15 +183,15 @@ class SkippaMixin:
         if len(self._column_names) == 0:
             logging.warn(f'No columns found for column selector {self.cols}')
         
-        if check_dtypes == 'numeric':
+        if check_dtypes in ['number', 'numeric']:
             if not all([is_numeric_dtype(t) for t in X[self._column_names].dtypes]):
                 raise TypeError('Transformation can only be applied to numeric columns')
         elif check_dtypes == 'float':
             if not all([is_float_dtype(t) for t in X[self._column_names].dtypes]):
-                raise TypeError('Transformation can only be applied to numeric columns')
+                raise TypeError('Transformation can only be applied to float columns')
         elif check_dtypes == 'string':
             if not all([is_string_dtype(t) for t in X[self._column_names].dtypes]):
-                raise TypeError('Transformation can only be applied to numeric columns')
+                raise TypeError('Transformation can only be applied to string columns')
         
         return self._column_names
 

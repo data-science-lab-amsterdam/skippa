@@ -15,6 +15,7 @@ from sklearn.preprocessing import (
     LabelEncoder,
     FunctionTransformer
 )
+from sklearn.decomposition import PCA
 from sklearn.compose import ColumnTransformer
 
 from skippa.transformers import ColumnSelector, SkippaMixin
@@ -183,3 +184,36 @@ class SkippaLabelEncoder(SkippaMixin, LabelEncoder):
         df = X.copy()
         df.loc[:, column_names] = encoded
         return df
+
+
+class SkippaPCA(SkippaMixin, PCA):
+    """Wrapper round sklearn's PCA"""
+
+    def __init__(self, cols: ColumnSelector, **kwargs) -> None:
+        self._set_columns(cols)
+        super().__init__(**kwargs)
+
+    def fit(self, X, y=None, **kwargs):
+        column_names = self._evaluate_columns(X, check_dtypes='number')
+        print(column_names)
+        super().fit(X[column_names], **kwargs)
+        return self
+
+    def transform(self, X, y=None, **kwargs):
+        column_names = self._evaluate_columns(X, check_dtypes='number')
+        data_new = super().transform(X[column_names], **kwargs)
+        df_new = X.drop(column_names, axis=1)
+        new_column_names = [f'c{i}' for i in range(self.n_components_)]
+        assert len(new_column_names) == data_new.shape[1], "Nr. of expected vs. actual columns doesn't match"
+        df_new.loc[:, new_column_names] = data_new
+        return df_new
+    
+    def fit_transform(self, X, y=None, **kwargs):
+        """The PCA parent class has a custom .fit_transform method for some reason."""
+        column_names = self._evaluate_columns(X, check_dtypes='number')
+        pca_result = super().fit_transform(X[column_names], y, **kwargs)
+        df_new = X.drop(column_names, axis=1)
+        new_column_names = [f'c{i}' for i in range(self.n_components_)]
+        assert len(new_column_names) == pca_result.shape[1], "Nr. of expected vs. actual columns doesn't match"
+        df_new.loc[:, new_column_names] = pca_result
+        return df_new

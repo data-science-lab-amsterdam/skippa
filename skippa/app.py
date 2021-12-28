@@ -58,16 +58,24 @@ class GradioApp:
             inputs.append(col_input)
 
         # define outputs
-        # To Do: this assumes binary classification always!
-        outputs = gr.outputs.Label(label='Prediction')
+        if self.data_profile.is_classification():
+            prediction_type = 'classification'
+            outputs = gr.outputs.Label(label='Prediction')
+        elif self.data_profile.is_regression():
+            prediction_type = 'regression'
+            outputs = gr.outputs.Textbox(type='number', label='Prediction')
+        else:
+            raise Exception('The data profile has no info on the labels available. Has the pipeline been ftted correctly?')
 
         # define inference function
         args = self.data_profile.column_names
         def _inference(*args):
             df = pd.DataFrame(data=[args], columns=self.data_profile.column_names)
-            pred = self.pipe.predict_proba(df)[0]
-            res = {'No': pred[0], 'Yes': pred[1]}
-            return res
+            if prediction_type == 'classification':
+                pred = self.pipe.predict_proba(df)[0]
+                return {'No': pred[0], 'Yes': pred[1]}
+            else:
+                return self.pipe.predict(df)[0]
 
         # define default args
         app_args = {

@@ -29,7 +29,7 @@ Defining a Skippa pipeline
 """
 from __future__ import annotations
 
-from typing import Any, Optional, Union, List, Callable, Type
+from typing import Any, Optional, Union, List, Dict, Callable, Tuple, Type
 from pathlib import Path
 
 import dill
@@ -54,6 +54,7 @@ from skippa.transformers.sklearn import (
     SkippaOneHotEncoder,
     SkippaLabelEncoder,
     SkippaOrdinalEncoder,
+    SkippaPCA,
     make_skippa_column_transformer
 )
 from skippa.transformers.custom import (
@@ -71,8 +72,20 @@ PathType = Union[Path, str]
 
 
 class SkippaPipeline(Pipeline):
+    """Extension of sklearn's Pipeline object.
+    
+    While the Skippa class is for creating pipelines, it is not a pipeline itself. Only after adding a model estimator step,
+    or by calling `.build` explicitly, is a SkippaPipeline created. This is basically an sklearn Pipeline with some added methods.
+    """
 
     def __init__(self, steps, *, memory=None, verbose=False):
+        """SkippaPipeline is generally initialised by a Skippa object, not by the user.
+
+        Args:
+            steps (List[Tuple]): the pipeline steps
+            memory ([type], optional): [description]. Defaults to None.
+            verbose (bool, optional): [description]. Defaults to False.
+        """
         self._is_fitted = False
         self._profile = None
         super().__init__(steps, memory=memory, verbose=verbose)
@@ -81,7 +94,14 @@ class SkippaPipeline(Pipeline):
         with open(Path(file_path).as_posix(), 'wb') as f:
             f.write(dill.dumps(self))
 
-    def get_model(self):
+    def get_model(self) -> BaseEstimator:
+        """Get the model estimator part of the pipeline.
+
+        So that you can access info like coefficients e.d.
+
+        Returns:
+            BaseEstimator: fitted model
+        """
         return self.steps[-1][1]
     
     def _create_data_profile(self, X, y) -> None:
@@ -121,6 +141,28 @@ class SkippaPipeline(Pipeline):
             gr.Interface: Gradio Interface object -> call .launch to start the app
         """
         return GradioApp(self).build(**kwargs)
+    
+    def get_pipeline_params(self, params: Dict) -> Dict:
+        """Translate model param grid to Pipeline param grid.
+        
+        For GridSearch over a Pipeline, you need to sdupply a param grid in the form of
+        { <stepname>__<paramname>: values }
+        Since it's non-trivial to find the name of the model/estimator step in the Pipeline,
+        this auto detects it and return a new param grid in the right format.
+
+        Args:
+            params (Dict): param grid with parameter names containing only the model parameter
+
+        Returns:
+            Dict: param grid with parameter names relating to both the pipeline step and the model parameter
+        """
+        step_names = list(self.named_steps.keys())
+        model_step_name = step_names[-1]
+        pipeline_params = {
+            f'{model_step_name}__{param}': value
+            for param, value in params.items()
+        }
+        return pipeline_params
 
 
 class Skippa:
@@ -390,6 +432,19 @@ class Skippa:
             Skippa: just return itself again (so we can use piping)
         """
         self._step('apply', SkippaApplier(*args, **kwargs))
+        return self
+    
+    def pca(self, cols: ColumnSelector, **kwargs) -> Skippa:
+        """Wrapper around sklearn.decomposition.PCA
+
+        Args:
+            cols (ColumnSelector): columns expression
+            kwargs: any kwargs to be used by PCA's __init__
+
+        Returns:
+            Skippa: just return itself again (so we can use piping)
+        """
+        self._step('pca', SkippaPCA(cols=cols, **kwargs))
         return self
 
     def model(self, model: BaseEstimator) -> SkippaPipeline:

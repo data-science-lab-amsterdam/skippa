@@ -11,6 +11,7 @@ def get_dummy_data(
     nint: int = 2,
     nchar: int = 3,
     ndate: int = 1,
+    missing: bool = True,
     binary_y: bool = True
 ) -> Tuple[pd.DataFrame, np.ndarray]:
     """Create dummy data.
@@ -61,12 +62,13 @@ def get_dummy_data(
         idx += 1
 
     # set missing values
-    if nfloat > 0:
-        data.iloc[0, idx_start_float] = np.nan
-    if nint > 0:
-        data.iloc[1, idx_start_int] = np.nan
-    if nchar > 0:
-        data.iloc[2, idx_start_char] = None
+    if missing:
+        if nfloat > 0:
+            data.iloc[0, idx_start_float] = np.nan
+        if nint > 0:
+            data.iloc[1, idx_start_int] = np.nan
+        if nchar > 0:
+            data.iloc[2, idx_start_char] = None
 
     if binary_y:
         y = (np.random.random((nrows,)) >= 0.75) * 1.

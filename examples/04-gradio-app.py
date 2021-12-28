@@ -17,7 +17,7 @@ from skippa.utils import get_dummy_data
 
 
 # get some data
-X, y = get_dummy_data(nrows=200, nfloat=3, nint=0, nchar=1, ndate=0)
+X, y = get_dummy_data(nrows=200, nfloat=3, nint=0, nchar=1, ndate=0, binary_y=True)
 
 # define model pipeline
 pipe = (

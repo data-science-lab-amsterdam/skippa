@@ -42,7 +42,6 @@ def test_simpleimputer_char(test_data):
     res = si.fit_transform(X)
     assert isinstance(res, pd.DataFrame)
     subset = res[col_spec(X)]
-    print(subset)
     assert subset.isna().sum().sum() == 0
 
 

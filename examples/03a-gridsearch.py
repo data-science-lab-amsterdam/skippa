@@ -7,7 +7,6 @@ This shows:
 - how to use train / test set
 - have to save a model/pipeline and how to load/reuse it
 """
-from numpy.core.fromnumeric import mean
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import GridSearchCV

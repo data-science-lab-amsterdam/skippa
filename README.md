@@ -94,7 +94,8 @@ predictions = my_pipeline.predict(df_new_data)
 See the [./examples](./examples) directory for more examples:
 - [01-standard-pipeline.py](./examples/01-standard-pipeline.py)
 - [02-preprocessing-only.py](./examples/02-preprocessing-only.py)
-- [03-gridsearch.py](./examples/03-gridsearch.py)
+- [03a-gridsearch.py](./examples/03a-gridsearch.py)
+- [03b-hyperopt.py](./examples/03b-hyperopt.py)
 - [04-gradio-app.py](./examples/04-gradio-app.py)
 - [05-PCA.py](./examples/05-PCA.py)
 

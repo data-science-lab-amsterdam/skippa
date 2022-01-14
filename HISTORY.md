@@ -1,5 +1,8 @@
 # History
 
+## 0.1.11 (2022-01-13)
+- Example added for hyperparameter tuning with Hyperopt
+
 ## 0.1.10 (2021-12-28)
 - Added support for PCA (including example)
 - Gradio app support extended to regression

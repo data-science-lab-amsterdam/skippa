@@ -13,7 +13,8 @@ with open('README.md') as readme_file:
 with open('HISTORY.md') as history_file:
     history = history_file.read()
 
-requirements = ['pandas', 'scikit-learn', 'dill', 'gradio']
+requirements = ['pandas', 'scikit-learn', 'dill']
+requirements_gradio = ['gradio']
 
 setup_requirements = ['pytest-runner', ]
 
@@ -42,6 +43,9 @@ setup(
     name='skippa',
     packages=find_packages(include=['skippa', 'skippa.*']),
     setup_requires=setup_requirements,
+    extras_require={
+        'gradio': requirements_gradio
+    },
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/data-science-lab-amsterdam/skippa',

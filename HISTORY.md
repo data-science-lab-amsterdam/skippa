@@ -1,5 +1,8 @@
 # History
 
+## 0.1.12 (2022-02-07)
+- Gradio & dependencies are not installed by default, but are declared an optional extra in setup
+
 ## 0.1.11 (2022-01-13)
 - Example added for hyperparameter tuning with Hyperopt
 

@@ -26,6 +26,10 @@ So basically the same idea as `scikit-pandas`, but a different (and hopefully be
 ```
 pip install skippa
 ```
+Optional, if you want to use the [gradio app functionality](./examples/04-gradio-app.py):
+```
+pip install skippa[gradio]
+```
 
 ## Basic usage
 

@@ -39,7 +39,6 @@ from sklearn.pipeline import Pipeline
 from sklearn.base import RegressorMixin, ClassifierMixin, ClusterMixin
 from sklearn.exceptions import NotFittedError
 
-from skippa.app import GradioApp
 from skippa.profile import DataProfile
 from skippa.transformers import (
     Transformation,
@@ -140,6 +139,7 @@ class SkippaPipeline(Pipeline):
         Returns:
             gr.Interface: Gradio Interface object -> call .launch to start the app
         """
+        from skippa.app import GradioApp  # don't import until used, since it's an optional install!
         return GradioApp(self).build(**kwargs)
     
     def get_pipeline_params(self, params: Dict) -> Dict:

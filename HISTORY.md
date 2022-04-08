@@ -1,5 +1,8 @@
 # History
 
+## 0.1.13 (2022-04-08)
+- Bugfix in imputer: using strategy='constant' threw a TypeError when used on string columns
+
 ## 0.1.12 (2022-02-07)
 - Gradio & dependencies are not installed by default, but are declared an optional extra in setup
 

@@ -58,6 +58,7 @@ def main():
     pipe = (
         Skippa()
             .impute(columns(dtype_include='number'), strategy='median')
+            .impute(columns(['h']), strategy='constant', fill_value='g')
             .impute(columns(dtype_include='object'), strategy='most_frequent')
             .scale(columns(dtype_include='number'), type='standard')
             .select(columns(exclude=['a', 'f', 'i', 'j']))

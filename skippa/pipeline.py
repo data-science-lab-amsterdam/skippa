@@ -123,7 +123,7 @@ class SkippaPipeline(Pipeline):
         assert isinstance(self._profile, DataProfile)
         return self._profile
     
-    def fit(self, X, y=None, **kwargs):
+    def fit(self, X, y=None, **kwargs) -> SkippaPipeline:
         """Inspect input data before fitting the pipeline."""
         self._create_data_profile(X, y)
         super().fit(X, y, **kwargs)
@@ -288,6 +288,20 @@ class Skippa:
             Skippa: just return itself again (so we can use piping)
         """
         self._step('impute', SkippaSimpleImputer(cols=cols, **kwargs))
+        return self
+    
+    def fillna(self, cols: ColumnSelector, value: Any) -> Skippa:
+        """Alias/shortcut for impute with constant value (after pandas' .fillna).
+
+        This implementation doesn't use pandas.DataFrame.fillna(), but sklearn's SimpleImputer
+
+        Args:
+            cols (ColumnSelector): _description_
+
+        Returns:
+            Skippa: just return itself again (so we can use piping)
+        """
+        self._step('impute', SkippaSimpleImputer(cols=cols, strategy='constant', fill_value=value))
         return self
 
     def scale(self, cols: ColumnSelector, type: str = 'standard', **kwargs) -> Skippa:

@@ -4,6 +4,8 @@
 ![Build status](https://img.shields.io/azure-devops/build/data-science-lab/Intern/263)
 ![Code coverage](https://img.shields.io/azure-devops/coverage/data-science-lab/Intern/263)
 
+<br><br>
+<img src="skippa-logo-transparent.png" alt="logo" width="200"/>
 
 # Skippa 
 

@@ -1,5 +1,11 @@
 # History
 
+## 0.1.14 (2022-05-13)
+- Bugfix in .assign: shouldn't have columns
+- Bugfix in imputer: explicit missing_values arg leads to issues
+- Used space-titanic data in examples
+- Logo added :)
+
 ## 0.1.13 (2022-04-08)
 - Bugfix in imputer: using strategy='constant' threw a TypeError when used on string columns
 

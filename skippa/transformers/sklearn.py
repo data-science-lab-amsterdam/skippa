@@ -64,10 +64,10 @@ class SkippaSimpleImputer(SkippaMixin, SimpleImputer):
         strategy = kwargs.get('strategy', 'mean')  # 'mean' is sklearn's default
         if strategy == 'most_frequent':
             self._dtype_required = 'string'
-            kwargs['missing_values'] = None
+            #kwargs['missing_values'] = None
         elif strategy in ['mean', 'median']:
             self._dtype_required = 'numeric'
-            kwargs['missing_values'] = np.nan
+            #kwargs['missing_values'] = np.nan
         else:
             self._dtype_required = None
 

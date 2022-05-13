@@ -3,7 +3,7 @@ DataProfile is used for storing and retrieving metadata of data that is used in 
 Typically the DataProfile is created during fitting of a pipeline.
 The profile is used by the Gradio app that can be created.
 """
-from typing import Optional, Any
+from typing import Optional, Any, Dict, Generator
 
 import numpy as np
 import pandas as pd
@@ -13,7 +13,7 @@ class DataProfile:
 
     MAX_NUM_DISTINCT_VALUES = 100000
 
-    def __init__(self, df: pd.DataFrame, y: Optional[Any] = None):
+    def __init__(self, df: pd.DataFrame, y: Optional[Any] = None) -> None:
         self.column_names = df.columns.tolist()
         self.dtypes = df.dtypes
         self.info = {}
@@ -65,13 +65,13 @@ class DataProfile:
             else:
                 self.info_labels['type'] = 'regression'
 
-    def __iter__(self):
+    def __iter__(self) -> Generator[Dict, None, None]:
         for column_name, info in self.info.items():
             info['name'] = column_name
             yield info
     
-    def is_classification(self):
+    def is_classification(self) -> bool:
         return self.info_labels['type'] in ['binary', 'multi-class']
     
-    def is_regression(self):
+    def is_regression(self) -> bool:
         return self.info_labels['type'] == 'regression'

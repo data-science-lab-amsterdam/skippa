@@ -5,8 +5,6 @@ This shows:
 - how to use train / test set
 - have to save a model/pipeline and how to load/reuse it
 """
-from datetime import datetime, timedelta
-
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
@@ -15,55 +13,37 @@ from sklearn.metrics import roc_auc_score
 from skippa import Skippa, columns
 
 
-def get_dummy_data():
-    len = 20
-    columns = [chr(i) for i in range(97, 107)]
-    data = pd.DataFrame(columns=columns)
-    idx = 0
-    # 4 floats
-    n = 4
-    data[columns[idx:idx+n]] = np.random.random((len, n)) * np.array([-1, 1, 10, 100])
-    idx += n
-    # 2 ints
-    n = 2
-    data[columns[idx:idx+n]] = np.random.randint(10, size=(len, n))
-    idx += n
-    # 3 chars
-    n = 3
-    start = 97
-    for i in range(n):
-        values = [chr(i) for i in np.random.randint(5, size=len) + start]
-        data.iloc[:, idx] = values
-        start += 5
-        idx += 1
-    # 1 date
-    dates = [datetime.now() + timedelta(days=-i) for i in range(len)]
-    data.iloc[:, idx] = [f'{d:%Y-%m-%d}' for d in dates]
-
-    # set missing values
-    data.iloc[3, 0] = np.nan
-    data.iloc[4, 1] = np.nan
-    data.iloc[5, 7] = None
-
-    y = (np.random.random((len,)) >= 0.75) * 1.
-    return data, y
-
-
 def main():
-    # get some data
-    X, y = get_dummy_data()
+    """
+    Example using the Spaceship Titanic dataset (see https://www.kaggle.com/competitions/spaceship-titanic)
+    """
+    # Read data, define X/y, split train test 
+    data = pd.read_csv('examples/space-titanic.csv')
+    X = data.drop(['Transported'], axis=1)
+    y = data['Transported'].astype(float)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=123)
 
-    # define the pipeline
+    # Define the pipeline
     pipe = (
         Skippa()
-            .impute(columns(dtype_include='number'), strategy='median')
-            .impute(columns(['h']), strategy='constant', fill_value='g')
-            .impute(columns(dtype_include='object'), strategy='most_frequent')
-            .scale(columns(dtype_include='number'), type='standard')
-            .select(columns(exclude=['a', 'f', 'i', 'j']))
-            .onehot(columns(['g', 'h']), handle_unknown='ignore')
-            .model(LogisticRegression())
+        # convert booleans to float
+        .astype(columns(['CryoSleep', 'VIP']), float)
+        # the Cabin column contains info on which deck and if it's port or starboard side
+        .assign(
+            cabin_deck=lambda df: df['Cabin'].str.split('/').str.get(0),
+            cabin_portside=lambda df: (df['Cabin'].str.split('/').str.get(2) == 'S').astype(float)
+        )
+        # remove (deselect) these columns
+        .select(columns(exclude=['PassengerId', 'Cabin', 'Name']))
+        # impute missing values: median value for numeric cols, most freequent for categorical cols
+        .impute(columns(dtype_include='number'), strategy='median')
+        .impute(columns(dtype_include='object'), strategy='most_frequent')
+        # scale numeric cols
+        .scale(columns(dtype_include='number'), type='standard')
+        # one-hot-encode categorical cols
+        .onehot(columns(dtype_include='object'), handle_unknown='ignore')
+        # now the data is ready to fit a classifier
+        .model(LogisticRegression())
     )
 
     # fit the pipeline on the data

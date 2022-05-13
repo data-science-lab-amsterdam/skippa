@@ -123,12 +123,28 @@ class SkippaPipeline(Pipeline):
         assert isinstance(self._profile, DataProfile)
         return self._profile
     
-    def fit(self, X, y=None, **kwargs):
+    def fit(self, X, y=None, **kwargs) -> SkippaPipeline:
         """Inspect input data before fitting the pipeline."""
         self._create_data_profile(X, y)
         super().fit(X, y, **kwargs)
         self._is_fitted = True
         return self
+    
+    def test(self, X, up_to_step: int = -1) -> pd.DataFrame:
+        """Test what happens to data in a pipeline.
+
+        This allows you to execute the pipeline up & until the last step before modeling (or any other step)
+        and get the resulting data.
+
+        Args:
+            X (_type_): _description_
+            up_to_step (int, optional): _description_. Defaults to -1.
+
+        Returns:
+            pd.DataFrame: _description_
+        """
+        new_pipe = SkippaPipeline(steps=self.steps[:up_to_step])
+        return new_pipe.fit_transform(X)
     
     def create_gradio_app(self, **kwargs):
         """Create a Gradio app for model inspection.
@@ -288,6 +304,20 @@ class Skippa:
             Skippa: just return itself again (so we can use piping)
         """
         self._step('impute', SkippaSimpleImputer(cols=cols, **kwargs))
+        return self
+    
+    def fillna(self, cols: ColumnSelector, value: Any) -> Skippa:
+        """Alias/shortcut for impute with constant value (after pandas' .fillna).
+
+        This implementation doesn't use pandas.DataFrame.fillna(), but sklearn's SimpleImputer
+
+        Args:
+            cols (ColumnSelector): _description_
+
+        Returns:
+            Skippa: just return itself again (so we can use piping)
+        """
+        self._step('impute', SkippaSimpleImputer(cols=cols, strategy='constant', fill_value=value))
         return self
 
     def scale(self, cols: ColumnSelector, type: str = 'standard', **kwargs) -> Skippa:

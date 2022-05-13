@@ -2,8 +2,9 @@
 ![python versions](https://img.shields.io/pypi/pyversions/skippa)
 ![downloads](https://img.shields.io/pypi/dm/skippa)
 ![Build status](https://img.shields.io/azure-devops/build/data-science-lab/Intern/263)
-![Code coverage](https://img.shields.io/azure-devops/coverage/data-science-lab/Intern/263)
 
+<br><br>
+<img src="skippa-logo-transparent.png" alt="logo" width="200"/>
 
 # Skippa 
 
@@ -115,7 +116,6 @@ See the [./examples](./examples) directory for more examples:
 - [ ] Investigate if Skippa can directly extend sklearn's Pipeline
 - [ ] Validation of pipeline steps
 - [ ] Input validation in transformers
-- [ ] OneHotEncoder: limit to maximum nr. of different values (n most frequent ones)
 - [ ] Transformer for replacing values (pandas .replace)
 - [ ] Support arbitrary transformer (if column-preserving)
 - [ ] Eliminate the need to call columns explicitly

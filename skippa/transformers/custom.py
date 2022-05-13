@@ -120,8 +120,9 @@ class SkippaSelector(BaseEstimator, TransformerMixin, SkippaMixin):
 class SkippaAssigner(BaseEstimator, TransformerMixin, SkippaMixin):
     """Transformer for selecting a subset of columns in a df."""
 
-    def __init__(self, cols: ColumnSelector, **kwargs) -> None:
-        self.cols = cols
+    def __init__(self, **kwargs) -> None:
+        """This one doesn't have a column selctor!"""
+        self.cols = None
         self.kwargs = kwargs
 
     def fit(self, X, y=None, **kwargs):
@@ -129,9 +130,7 @@ class SkippaAssigner(BaseEstimator, TransformerMixin, SkippaMixin):
 
     def transform(self, X, y=None, **kwargs):
         df = X.copy()
-        for column_name in self._evaluate_columns():
-            df[column_name] = df[column_name].map
-        df = X.assign(**self.kwargs)
+        df = df.assign(**self.kwargs)
         return df
 
 class SkippaReplacer(BaseEstimator, TransformerMixin, SkippaMixin):

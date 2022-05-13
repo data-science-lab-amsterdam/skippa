@@ -55,6 +55,7 @@ def main():
         param_grid=params,
         cv=3, 
         error_score='raise',
+        n_jobs=-1,
         verbose=3
     )
 

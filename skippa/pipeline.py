@@ -130,6 +130,22 @@ class SkippaPipeline(Pipeline):
         self._is_fitted = True
         return self
     
+    def test(self, X, up_to_step: int = -1) -> pd.DataFrame:
+        """Test what happens to data in a pipeline.
+
+        This allows you to execute the pipeline up & until the last step before modeling (or any other step)
+        and get the resulting data.
+
+        Args:
+            X (_type_): _description_
+            up_to_step (int, optional): _description_. Defaults to -1.
+
+        Returns:
+            pd.DataFrame: _description_
+        """
+        new_pipe = SkippaPipeline(steps=self.steps[:up_to_step])
+        return new_pipe.fit_transform(X)
+    
     def create_gradio_app(self, **kwargs):
         """Create a Gradio app for model inspection.
 

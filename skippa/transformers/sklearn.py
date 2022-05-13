@@ -60,14 +60,39 @@ class SkippaSimpleImputer(SkippaMixin, SimpleImputer):
     """Wrapper round sklearn's SimpleImputer"""
 
     def __init__(self, cols: ColumnSelector, **kwargs) -> None:
+        """_summary_
+
+        Note on how SimpleImputer works:
+        - numeric imputation:
+            - np.nan gets imputed
+            - None gets imputed
+        - categorical imputation
+            - missing_values = np.nan (default)
+                - np.nan gets imputed
+                - None does NOT get imputed
+            - missing_values = None
+                - np.nan throws error
+                - None gets imputed
+
+        To remedy this, what we need to do is:
+        - numeric columns: leave default missing_values (np.nan)
+        - categorical columns:
+            - first use df = df.replace([None], np.nan)
+            - then impute using missing_values = np.nan
+
+        Args:
+            cols (ColumnSelector): _description_
+        """
         self._set_columns(cols)
         strategy = kwargs.get('strategy', 'mean')  # 'mean' is sklearn's default
         if strategy == 'most_frequent':
             self._dtype_required = 'string'
             #kwargs['missing_values'] = None
+            self._replace_none = True
         elif strategy in ['mean', 'median']:
             self._dtype_required = 'numeric'
             #kwargs['missing_values'] = np.nan
+            self._replace_none = False
         else:
             self._dtype_required = None
 
@@ -80,9 +105,12 @@ class SkippaSimpleImputer(SkippaMixin, SimpleImputer):
 
     def transform(self, X, y=None, **kwargs):
         column_names = self._evaluate_columns(X, check_dtypes=self._dtype_required)
-        res = super().transform(X[column_names], **kwargs)
+        df_to_impute = X[column_names].copy()
+        if self._replace_none:
+            df_to_impute = df_to_impute.replace([None], np.nan)
+        result = super().transform(df_to_impute, **kwargs)
         df = X.copy()
-        df.loc[:, column_names] = res
+        df.loc[:, column_names] = result
         return df
 
 

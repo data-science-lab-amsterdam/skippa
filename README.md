@@ -113,7 +113,8 @@ See the [./examples](./examples) directory for more examples:
 - [x] Support PCA transformer
 - [ ] Facilitate random seed in Skippa object that is dispatched to all downstream operations
 - [ ] fit-transform does lazy evaluation > cast to category and then selecting category columns doesn't work > each fit/transform should work on the expected output state of the previous transformer, rather than on the original dataframe
-- [ ] Investigate if Skippa can directly extend sklearn's Pipeline
+- [ ] Investigate if Skippa can directly extend sklearn's Pipeline -> using __getitem__ trick
+- [ ] Use sklearn's new dataframe output setting
 - [ ] Validation of pipeline steps
 - [ ] Input validation in transformers
 - [ ] Transformer for replacing values (pandas .replace)

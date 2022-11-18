@@ -232,7 +232,7 @@ class Skippa:
             SkippaPipeline: an extended sklearn Pipeline
         """
         with open(Path(path).as_posix(), 'rb') as f:
-            pipe = dill.loads(f.read())
+            pipe = dill.load(f)
             if isinstance(pipe, Skippa):
                 raise TypeError(
                     "You're using the .load_pipeline method for a Skippa."
@@ -257,7 +257,7 @@ class Skippa:
             Pipeline: an sklearn Pipeline
         """
         with open(Path(path).as_posix(), 'rb') as f:
-            pipe = dill.loads(f.read())
+            pipe = dill.load(f)
             if isinstance(pipe, SkippaPipeline):
                 raise TypeError(
                     "You're using the .load method for a Pipeline."
@@ -270,8 +270,9 @@ class Skippa:
 
     def save(self, file_path: PathType) -> None:
         """Save to disk using dill"""
+        Path(file_path).parent.mkdir(parents=True, exist_ok=True)
         with open(Path(file_path).as_posix(), 'wb') as f:
-            f.write(dill.dumps(self))
+            dill.dump(self, f, recurse=True)
 
     def cast(self, cols: ColumnSelector, dtype: Any) -> Skippa:
         """Cast column to another data type.
@@ -457,13 +458,13 @@ class Skippa:
         Arguments:
             *args: first arg should be the funciton to apply
             **kwargs: e.g. axis to apply function on
-            
+
         Returns:
             Skippa: just return itself again (so we can use piping)
         """
         self._step('apply', SkippaApplier(*args, **kwargs))
         return self
-    
+
     def pca(self, cols: ColumnSelector, **kwargs) -> Skippa:
         """Wrapper around sklearn.decomposition.PCA
 
@@ -530,7 +531,7 @@ class Skippa:
         """
         new_pipe = Skippa()
         new_pipe._step(
-            'concat', 
+            'concat',
             SkippaConcat(
                 left=('part1', self.build()),
                 right=('part2', pipe.build())

@@ -1,5 +1,8 @@
 # History
 
+## 0.1.15 (2022-11-18)
+- Fix: when saving a pipeline, include dependencies in dill serialization.
+
 ## 0.1.14 (2022-05-13)
 - Bugfix in .assign: shouldn't have columns
 - Bugfix in imputer: explicit missing_values arg leads to issues

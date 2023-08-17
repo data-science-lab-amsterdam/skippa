@@ -1,5 +1,8 @@
 # History
 
+## 0.1.16 (2023-08-17)
+- Bugfix: missing _replace_none attribute for SimpleImputer with strategy='constant'
+
 ## 0.1.15 (2022-11-18)
 - Fix: when saving a pipeline, include dependencies in dill serialization.
 

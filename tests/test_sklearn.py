@@ -45,6 +45,26 @@ def test_simpleimputer_char(test_data):
     assert subset.isna().sum().sum() == 0
 
 
+def test_simpleimputer_char_constant(test_data):
+    X, _ = test_data
+    col_spec = columns(dtype_include='object')
+    si = SkippaSimpleImputer(cols=col_spec, strategy='constant', missing_values=None, fill_value='<leeg>')
+    res = si.fit_transform(X)
+    assert isinstance(res, pd.DataFrame)
+    subset = res[col_spec(X)]
+    assert subset.isna().sum().sum() == 0
+
+
+def test_simpleimputer_float_constant(test_data):
+    X, _ = test_data
+    col_spec = columns(dtype_include='float')
+    si = SkippaSimpleImputer(cols=col_spec, strategy='constant', missing_values=np.nan, fill_value=0.)
+    res = si.fit_transform(X)
+    assert isinstance(res, pd.DataFrame)
+    subset = res[col_spec(X)]
+    assert subset.isna().sum().sum() == 0
+
+
 def test_standardscaler():
     X, _ = get_dummy_data(nchar=0, ndate=0, nrows=10)
     ss = SkippaStandardScaler(cols=columns())

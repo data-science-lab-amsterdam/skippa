@@ -94,6 +94,7 @@ class SkippaSimpleImputer(SkippaMixin, SimpleImputer):
             #kwargs['missing_values'] = np.nan
             self._replace_none = False
         else:
+            self._replace_none = False
             self._dtype_required = None
 
         super().__init__(**kwargs)
